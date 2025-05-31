@@ -36,3 +36,27 @@ export interface NipInfo {
   disabled?: boolean;
   description?: string;
 }
+
+// Review-related types
+export interface MintReview {
+  id: string;
+  pubkey: string;
+  created_at: number;
+  mintUrl: string;
+  rating: number;
+  title: string;
+  content: string;
+  author?: string;
+  verified?: boolean;
+  aTag?: string;
+}
+
+export interface NostrEvent {
+  id: string;
+  pubkey: string;
+  created_at: number;
+  kind: number;
+  tags: string[][];
+  content: string;
+  sig: string;
+}
