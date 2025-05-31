@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.mint-carousel .swiper-button-next,
+.mint-carousel .swiper-button-prev {
+  color: theme('colors.brand.primary');
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mint-carousel:hover .swiper-button-next,
+.mint-carousel:hover .swiper-button-prev {
+  opacity: 1;
+}
+
+.mint-carousel .swiper-button-next::after,
+.mint-carousel .swiper-button-prev::after {
+  font-size: 24px;
+}
+
+.mint-carousel .swiper-button-disabled {
+  opacity: 0 !important;
+}
