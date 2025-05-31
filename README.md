@@ -99,6 +99,101 @@ VITE_ANALYTICS_SRC=https://analytics.azzamo.net/js/script.js
 
 # Server Configuration
 VITE_PORT=5174
+VITE_PREVIEW_PORT=4173
+
+# Proxy Configuration
+VITE_BASE_PATH=/
+VITE_API_TARGET=http://localhost:3000
+```
+
+### Proxy Configuration
+
+The application can be served behind any proxy or reverse proxy setup:
+
+#### Environment Variables
+
+- **`VITE_BASE_PATH`**: Base path for the application (default: `/`)
+  - Examples: `/`, `/21mint.me/`, `/cashu/`, `/mint-info/`
+- **`VITE_API_TARGET`**: API proxy target for development (optional)
+- **`VITE_ALLOWED_HOSTS`**: Comma-separated list of allowed hosts for proxy setups
+  - Leave empty to allow all hosts (recommended for most setups)
+  - Example: `mintpage.azzamo.net,localhost,127.0.0.1`
+
+#### Common Proxy Issues
+
+**"Host not allowed" Error:**
+If you see: `Blocked request. This host ("your-domain") is not allowed.`
+
+**Solution 1 (Recommended)**: Leave `VITE_ALLOWED_HOSTS` empty to allow all hosts:
+```env
+VITE_ALLOWED_HOSTS=
+```
+
+**Solution 2**: Explicitly allow your domain:
+```env
+VITE_ALLOWED_HOSTS=mintpage.azzamo.net,localhost
+```
+
+**Solution 3**: Update your nginx configuration to preserve the original host:
+```nginx
+location /21mint.me/ {
+    proxy_pass http://localhost:5174/;
+    proxy_set_header Host localhost:5174;  # Use backend host
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;  # Original host in separate header
+}
+```
+
+#### Example Configurations
+
+**Root Path (Default)**:
+```env
+VITE_BASE_PATH=/
+```
+
+**Subpath Deployment**:
+```env
+VITE_BASE_PATH=/21mint.me/
+```
+
+**Multiple Mint Setup**:
+```env
+VITE_BASE_PATH=/mint-directory/
+```
+
+#### Nginx Proxy Examples
+
+**Standard Configuration:**
+```nginx
+location /21mint.me/ {
+    proxy_pass http://localhost:5174/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+**Host Override (for Vite dev server):**
+```nginx
+location /21mint.me/ {
+    proxy_pass http://localhost:5174/;
+    proxy_set_header Host localhost:5174;  # Use backend host
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;  # Original host in separate header
+}
+```
+
+#### Apache Proxy Example
+
+```apache
+ProxyPass /21mint.me/ http://localhost:5174/
+ProxyPassReverse /21mint.me/ http://localhost:5174/
+ProxyPreserveHost On
 ```
 
 ### Analytics
@@ -115,7 +210,9 @@ The analytics script is loaded dynamically and respects the configuration settin
 ## 📜 Scripts
 
 - `npm run dev` - Start development server on port 5174
-- `npm run build` - Build for production
+- `npm run build` - Build for production (uses environment variables)
+- `npm run build:root` - Build for root path deployment (`/`)
+- `npm run build:subpath` - Build for subpath deployment (uses `VITE_BASE_PATH`)
 - `npm run serve` - Serve production build
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build

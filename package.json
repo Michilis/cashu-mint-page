@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --port 5174",
     "build": "vite build",
+    "build:root": "VITE_BASE_PATH=/ vite build",
+    "build:subpath": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "serve": "serve -s dist -l 5174"
