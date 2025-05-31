@@ -336,42 +336,6 @@ Reviews are published in this format:
 - **Rate limiting** and abuse prevention
 - **No tracking or analytics**
 
-## 🛠️ Development
-
-### Key Components
-
-- **MintPage**: Main mint information display
-- **ReviewsCard**: Complete reviews system with filtering
-- **ReviewForm**: Review publishing with browser extension integration
-- **ReviewItem**: Individual review display with profile fetching
-
-### Adding Features
-
-1. **New Components**: Add to appropriate directory in `src/components/`
-2. **API Integration**: Extend services in `src/services/`
-3. **Type Safety**: Define types in `src/types/`
-4. **Routing**: Update routes in main App component
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Cashu Protocol** for the innovative ecash system
-- **Nostr Protocol** for decentralized communications
-- **NDK Team** for the excellent development kit
-- **Browser Extension Developers** (Alby, nos2x, Flamingo)
-- **Open Source Community** for tools and libraries
-
 
 ## 🔗 Links
 
