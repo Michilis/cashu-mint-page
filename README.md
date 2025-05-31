@@ -85,13 +85,32 @@ A modern, responsive web application for displaying Cashu mint information and u
 Create a `.env` file with the following variables:
 
 ```env
+# Feature Toggles
 VITE_ENABLE_CONTACT=true
 VITE_ENABLE_MOTD=true
 VITE_ENABLE_ICON=true
 VITE_ENABLE_TOS=true
 VITE_ENABLE_NUT_TABLE=true
+
+# Analytics Configuration
+VITE_ENABLE_ANALYTICS=true
+VITE_ANALYTICS_DOMAIN=mintpage.azzamo.net
+VITE_ANALYTICS_SRC=https://analytics.azzamo.net/js/script.js
+
+# Server Configuration
 VITE_PORT=5174
 ```
+
+### Analytics
+
+The application includes privacy-focused analytics using Plausible Analytics:
+
+- **Configurable**: Can be disabled by setting `VITE_ENABLE_ANALYTICS=false`
+- **Privacy-focused**: No personal data collection or tracking
+- **Custom Events**: Tracks mint views, review submissions, and user interactions
+- **Lightweight**: Minimal performance impact
+
+The analytics script is loaded dynamically and respects the configuration settings.
 
 ## 📜 Scripts
 

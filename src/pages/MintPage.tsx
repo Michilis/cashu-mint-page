@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getMintInfoByDomain } from '../services/api';
 import { MintInfo } from '../types';
 import { useMintStore } from '../store/mintStore';
+import { trackMintView, trackMintInfoFetch } from '../utils/analytics';
 import InfoSection from '../components/InfoSection';
 import ContactCard from '../components/cards/ContactCard';
 import NutSupportCard from '../components/cards/NutSupportCard';
@@ -30,9 +31,15 @@ const MintPage: React.FC = () => {
       setMintInfo(data);
       addMint(domain, data);
       document.title = `${data.name || domain} Mint Info`;
+      
+      // Track successful mint info fetch
+      trackMintInfoFetch(data.url || domain, true);
     } catch (err) {
       console.error('Error fetching mint info:', err);
       setError(`Failed to load mint information for ${domain}`);
+      
+      // Track failed mint info fetch
+      trackMintInfoFetch(domain, false);
     } finally {
       setLoading(false);
     }
@@ -41,6 +48,13 @@ const MintPage: React.FC = () => {
   useEffect(() => {
     fetchMintInfo();
   }, [domain]);
+
+  // Track mint view when component mounts and mintInfo is loaded
+  useEffect(() => {
+    if (mintInfo && domain) {
+      trackMintView(mintInfo.url || domain);
+    }
+  }, [mintInfo, domain]);
 
   const showContact = import.meta.env.VITE_ENABLE_CONTACT === 'true' && mintInfo?.contact;
   const showNutTable = import.meta.env.VITE_ENABLE_NUT_TABLE === 'true' && mintInfo?.nuts;
