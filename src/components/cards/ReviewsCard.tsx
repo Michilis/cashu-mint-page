@@ -18,7 +18,7 @@ interface ReviewsCardProps {
 }
 
 const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl, mintName }) => {
-  const { reviews, loading, submitting, connectionStatus, submitReview, loadMoreReviews, mintPubkey, hasMoreReviews } = useReviews(mintUrl);
+  const { reviews, loading, submitting, connectionStatus, submitReview, loadMoreReviews, mintPubkey, hasMoreReviews, isLoadingMore } = useReviews(mintUrl);
   
   // State for filtering and pagination
   const [filters, setFilters] = useState<ReviewFilters>({
@@ -359,23 +359,44 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl, mintName }) => {
       )}
 
       {/* Load More Button */}
-      {!loading && paginatedReviews.length > 0 && reviewsPerPage !== 'all' && hasMoreReviews && (
+      {!loading && reviews.length > 0 && hasMoreReviews && (
         <div className="mt-6 text-center">
           <button
             onClick={handleLoadMore}
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg transition-colors border border-gray-600 hover:border-gray-500 disabled:bg-gray-800 disabled:text-gray-500 flex items-center gap-2 mx-auto"
+            disabled={isLoadingMore}
+            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg transition-colors border border-gray-600 hover:border-gray-500 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
           >
-            <RefreshCw className="w-4 h-4" />
-            Load More Reviews
+            {isLoadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                Loading More Reviews...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Load More Reviews
+              </>
+            )}
           </button>
           <p className="text-xs text-gray-500 mt-2">
-            Fetching more NIP-87 reviews from Nostr relay for mint {mintPubkey ? mintPubkey.substring(0, 16) + '...' : mintName}
+            {isLoadingMore 
+              ? `Searching for more reviews from Nostr...` 
+              : `Fetching more NIP-87 reviews from Nostr relay for mint ${mintPubkey ? mintPubkey.substring(0, 16) + '...' : mintName}`
+            }
           </p>
         </div>
       )}
 
+      {/* Loading More Indicator */}
+      {isLoadingMore && !loading && (
+        <div className="mt-4 flex items-center justify-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mr-3"></div>
+          <span className="text-gray-400">Searching for more reviews...</span>
+        </div>
+      )}
+
       {/* All Reviews Loaded Message */}
-      {!loading && paginatedReviews.length > 0 && !hasMoreReviews && (
+      {!loading && !isLoadingMore && paginatedReviews.length > 0 && !hasMoreReviews && (
         <div className="mt-6 text-center">
           <div className="text-sm text-gray-400 flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-green-400 rounded-full"></span>
