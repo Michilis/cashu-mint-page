@@ -214,14 +214,32 @@ export const useReviews = (mintUrl: string) => {
               uTag === `${mintUrl}/` ||
               uTag === mintUrl.replace(/^https?:\/\//, '') ||
               mintUrl.includes(uTag.replace(/^https?:\/\//, '')) ||
-              uTag.replace(/^https?:\/\//, '').includes(mintUrl.replace(/^https?:\/\//, ''))
+              uTag.replace(/^https?:\/\//, '').includes(mintUrl.replace(/^https?:\/\//, '')) ||
+              // More flexible path matching - extract base domain
+              mintUrl.replace(/^https?:\/\//, '').split('/')[0] === uTag.replace(/^https?:\/\//, '').split('/')[0] ||
+              uTag.replace(/^https?:\/\//, '').split('/')[0] === mintUrl.replace(/^https?:\/\//, '').split('/')[0]
             );
             
             // BROADER MATCHING: Also check content for mint references
             const mintDomain = mintUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            const baseDomain = mintDomain.split('/')[0]; // Extract just the domain part
             const contentMentionsMint = review.content.toLowerCase().includes(mintDomain.toLowerCase()) ||
+                                       review.content.toLowerCase().includes(baseDomain.toLowerCase()) ||
                                        review.content.toLowerCase().includes('21mint') ||
                                        review.content.toLowerCase().includes(mintUrl.toLowerCase());
+
+            // Additional debug logging for minibits specifically
+            if (mintUrl.includes('minibits')) {
+              console.log(`  🔍 MINIBITS DEBUG for event ${reviewEventCount}:`);
+              console.log(`    mintUrl: ${mintUrl}`);
+              console.log(`    mintDomain: ${mintDomain}`);
+              console.log(`    dTag: ${dTag}, expected pubkey: ${pubkey}`);
+              console.log(`    uTag: ${uTag}`);
+              console.log(`    isProperNIP87: ${isProperNIP87}`);
+              console.log(`    isLegacyReview: ${isLegacyReview}`);
+              console.log(`    contentMentionsMint: ${contentMentionsMint}`);
+              console.log(`    review content: ${review.content.substring(0, 200)}`);
+            }
 
             if (isProperNIP87) {
               console.log(`  ✅ Valid NIP-87 review found (proper format)`);
@@ -285,17 +303,23 @@ export const useReviews = (mintUrl: string) => {
         if (isLoadingMore) {
           // If this was a "load more" request and we found fewer new reviews than expected,
           // we've probably reached the end
-          if (newReviewsFound === 0 && currentLimitRef.current > 1000) {
+          if (newReviewsFound === 0) {
             setHasMoreReviews(false);
-            console.log(`📊 No new reviews found after limit ${currentLimitRef.current} - likely reached end`);
+            console.log(`📊 No new reviews found in load more - reached end`);
           } else {
             console.log(`📊 Found ${newReviewsFound} new reviews in load more`);
-            // Keep showing load more unless we're at a very high limit with no results
-            setHasMoreReviews(currentLimitRef.current < 2000 || newReviewsFound > 0);
+            // Keep load more available if we found new reviews
+            setHasMoreReviews(true);
           }
         } else {
-          // Initial load - be more permissive about showing load more
-          setHasMoreReviews(true); // Always show load more initially
+          // Initial load - show load more if we have some reviews or if we're below the limit
+          // This handles cases where some reviews might be filtered out but more could exist
+          const shouldShowLoadMore = aggregatedReviews.length > 0 && (
+            reviewEventCount >= currentLimitRef.current || // We hit our limit, more might exist
+            aggregatedReviews.length >= 2 // We have some reviews, try for more
+          );
+          setHasMoreReviews(shouldShowLoadMore);
+          console.log(`📊 Initial load: ${aggregatedReviews.length} reviews, ${reviewEventCount} events processed, showing load more: ${shouldShowLoadMore}`);
         }
         
         // Update tracking
@@ -444,6 +468,7 @@ export const useReviews = (mintUrl: string) => {
     submitReview,
     loadMoreReviews,
     mintPubkey, // Export mint pubkey for debugging
-    hasMoreReviews
+    hasMoreReviews,
+    isLoadingMore
   };
 }; 

@@ -2,21 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Carousel styling */
+.review-carousel .swiper-button-next,
+.review-carousel .swiper-button-prev {
+  color: rgb(var(--brand-primary));
+  background: rgba(0, 0, 0, 0.5);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+}
+
+.review-carousel .swiper-button-next:after,
+.review-carousel .swiper-button-prev:after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.review-carousel .swiper-button-next:hover,
+.review-carousel .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Mint carousel styling */
 .mint-carousel .swiper-button-next,
 .mint-carousel .swiper-button-prev {
-  color: theme('colors.brand.primary');
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  color: rgb(var(--brand-primary));
+  background: rgba(0, 0, 0, 0.5);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
 }
 
-.mint-carousel:hover .swiper-button-next,
-.mint-carousel:hover .swiper-button-prev {
-  opacity: 1;
+.mint-carousel .swiper-button-next:after,
+.mint-carousel .swiper-button-prev:after {
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.mint-carousel .swiper-button-next::after,
-.mint-carousel .swiper-button-prev::after {
-  font-size: 24px;
+.mint-carousel .swiper-button-next:hover,
+.mint-carousel .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .mint-carousel .swiper-button-disabled {

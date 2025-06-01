@@ -5,13 +5,18 @@ import MintPage from './pages/MintPage';
 import Analytics from './components/Analytics';
 
 function App() {
+  // Get base path from environment variable, default to '/'
+  const basePath = import.meta.env.VITE_BASE_PATH || '/';
+  
+  console.log('🌐 App base path:', basePath);
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basePath}>
       <Analytics />
       <div className="min-h-screen bg-brand-background">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/:domain" element={<MintPage />} />
+          <Route path="/*" element={<MintPage />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { getMintInfoByDomain } from '../services/api';
 import { MintInfo } from '../types';
 import { useMintStore } from '../store/mintStore';
@@ -15,31 +15,45 @@ import ErrorDisplay from '../components/ErrorDisplay';
 import MintHeader from '../components/MintHeader';
 
 const MintPage: React.FC = () => {
-  const { domain } = useParams<{ domain: string }>();
+  const location = useLocation();
+  // Extract the full path excluding the leading slash
+  const mintPath = location.pathname.slice(1);
   const [mintInfo, setMintInfo] = useState<MintInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const addMint = useMintStore((state) => state.addMint);
 
   const fetchMintInfo = async () => {
-    if (!domain) return;
+    if (!mintPath) {
+      console.error('❌ No mint path provided');
+      setError('No mint domain specified');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('🏗️ MintPage: Starting fetch for mint path:', mintPath);
+    console.log('🔍 Full pathname:', location.pathname);
+    
     setLoading(true);
     setError(null);
     
     try {
-      const data = await getMintInfoByDomain(domain);
+      const data = await getMintInfoByDomain(mintPath);
+      console.log('✅ MintPage: Successfully fetched mint info:', data);
+      
       setMintInfo(data);
-      addMint(domain, data);
-      document.title = `${data.name || domain} Mint Info`;
+      addMint(mintPath, data);
+      document.title = `${data.name || mintPath} Mint Info`;
       
       // Track successful mint info fetch
-      trackMintInfoFetch(data.url || domain, true);
+      trackMintInfoFetch(data.url || mintPath, true);
     } catch (err) {
-      console.error('Error fetching mint info:', err);
-      setError(`Failed to load mint information for ${domain}`);
+      console.error('❌ MintPage: Error fetching mint info:', err);
+      const errorMessage = err instanceof Error ? err.message : `Failed to load mint information for ${mintPath}`;
+      setError(errorMessage);
       
       // Track failed mint info fetch
-      trackMintInfoFetch(domain, false);
+      trackMintInfoFetch(mintPath, false);
     } finally {
       setLoading(false);
     }
@@ -47,14 +61,14 @@ const MintPage: React.FC = () => {
 
   useEffect(() => {
     fetchMintInfo();
-  }, [domain]);
+  }, [mintPath]);
 
   // Track mint view when component mounts and mintInfo is loaded
   useEffect(() => {
-    if (mintInfo && domain) {
-      trackMintView(mintInfo.url || domain);
+    if (mintInfo && mintPath) {
+      trackMintView(mintInfo.url || mintPath);
     }
-  }, [mintInfo, domain]);
+  }, [mintInfo, mintPath]);
 
   const showContact = import.meta.env.VITE_ENABLE_CONTACT === 'true' && mintInfo?.contact;
   const showNutTable = import.meta.env.VITE_ENABLE_NUT_TABLE === 'true' && mintInfo?.nuts;
@@ -87,8 +101,8 @@ const MintPage: React.FC = () => {
 
         {/* Reviews Section */}
         <ReviewsCard 
-          mintUrl={mintInfo.url || mintInfo.urls?.[0] || domain || ''} 
-          mintName={mintInfo.name || domain || 'Unknown Mint'} 
+          mintUrl={mintInfo.url || mintInfo.urls?.[0] || mintPath || ''} 
+          mintName={mintInfo.name || mintPath || 'Unknown Mint'} 
         />
       </div>
 
