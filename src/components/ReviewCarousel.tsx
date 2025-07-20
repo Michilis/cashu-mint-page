@@ -56,12 +56,12 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, loading }) => 
         }}
         className="review-carousel"
       >
-        {reviews.map((review) => {
+        {reviews.map((review, index) => {
           // Extract mint domain for routing
           const mintDomain = review.mintUrl.replace(/^https?:\/\//, '');
           
           return (
-            <SwiperSlide key={review.id}>
+            <SwiperSlide key={`${review.id}-${index}`}>
               <Link
                 to={`/${mintDomain}`}
                 className="block bg-gray-800/50 backdrop-blur rounded-xl p-6 hover:bg-gray-800 transition-all duration-300 border border-gray-700 hover:border-brand-primary group h-full"
@@ -117,7 +117,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, loading }) => 
                   <div className="flex items-center gap-1">
                     <User className="h-3 w-3" />
                     <span>
-                      {review.author || `${review.pubkey.substring(0, 8)}...`}
+                      {`${review.pubkey.substring(0, 8)}...`}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

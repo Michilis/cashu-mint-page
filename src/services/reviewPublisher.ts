@@ -5,11 +5,12 @@ import { getMintPubkey } from './api';
 const MINT_RECOMMENDATION_KIND = 38000; // Review event kind
 const CASHU_MINT_KIND = 38172; // Cashu mint announcement kind
 
-// Relay configuration
+// Relay configuration - using the same pool as the main app
 const RELAY_URLS = [
-  "wss://relay.cashumints.space",
-  "wss://relay.azzamo.net",
-  "wss://relay.damus.io"
+  "wss://relay.cashumints.space", // Primary Cashu mint relay
+  "wss://relay.damus.io", // Popular relay with many profiles
+  "wss://relay.snort.social", // Snort relay
+  "wss://relay.primal.net", // Primal relay
 ];
 
 export interface ReviewData {

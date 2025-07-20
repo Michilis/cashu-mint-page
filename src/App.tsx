@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import Discover from './pages/Discover';
 import MintPage from './pages/MintPage';
-import Analytics from './components/Analytics';
+import Header from './components/Header';
+import DebugInfo from './components/DebugInfo';
 
 function App() {
   // Get base path from environment variable, default to '/'
@@ -12,12 +14,14 @@ function App() {
 
   return (
     <BrowserRouter basename={basePath}>
-      <Analytics />
       <div className="min-h-screen bg-brand-background">
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/discover" element={<Discover />} />
           <Route path="/*" element={<MintPage />} />
         </Routes>
+        <DebugInfo />
       </div>
     </BrowserRouter>
   );

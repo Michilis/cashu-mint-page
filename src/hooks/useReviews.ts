@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import NDK, { NDKEvent, NDKFilter, NDKSubscription } from '@nostr-dev-kit/ndk';
 import { MintReview } from '../types';
-import { initializeNDK, MINT_RECOMMENDATION_KIND, CASHU_MINT_KIND, generateRandomHex, RELAY_URL } from '../utils/ndk';
+import { initializeNDK, MINT_RECOMMENDATION_KIND, CASHU_MINT_KIND, generateRandomHex, getSharedNDK } from '../utils/ndk';
 import { getMintPubkey } from '../services/api';
 import { publishCashuMintReview, validateReview, type ReviewData } from '../services/reviewPublisher';
 import { 
@@ -9,6 +9,9 @@ import {
   isValidReview, 
   aggregateReviews
 } from '../utils/reviewHelpers';
+
+// Profile cache for usernames
+export const profileCache = new Map<string, { name?: string; displayName?: string; image?: string } | null>();
 
 export const useReviews = (mintUrl: string) => {
   const [reviews, setReviews] = useState<MintReview[]>([]);
@@ -260,6 +263,34 @@ export const useReviews = (mintUrl: string) => {
             console.log(`    - Author: ${review.author}`);
             console.log(`    - Content: ${review.content.substring(0, 100)}...`);
             
+            // Fetch username for this review
+            const fetchUsername = async () => {
+              if (!profileCache.has(review.pubkey)) {
+                try {
+                  const ndk = await getSharedNDK();
+                  const user = ndk.getUser({ pubkey: review.pubkey });
+                  const userProfile = await user.fetchProfile();
+                  
+                  if (userProfile) {
+                    profileCache.set(review.pubkey, {
+                      name: userProfile.name,
+                      displayName: userProfile.displayName,
+                      image: userProfile.image
+                    });
+                    console.log(`  👤 Fetched username: ${userProfile.displayName || userProfile.name}`);
+                  } else {
+                    profileCache.set(review.pubkey, null);
+                  }
+                } catch (error) {
+                  console.warn(`  ❌ Failed to fetch username for ${review.pubkey.substring(0, 16)}...`);
+                  profileCache.set(review.pubkey, null);
+                }
+              }
+            };
+            
+            // Fetch username in background
+            fetchUsername();
+            
             // Check if we already have this review (avoid duplicates)
             const existingIndex = fetchedReviewsRef.current.findIndex(r => r.id === review.id);
             if (existingIndex >= 0) {
@@ -471,4 +502,4 @@ export const useReviews = (mintUrl: string) => {
     hasMoreReviews,
     isLoadingMore
   };
-}; 
+};

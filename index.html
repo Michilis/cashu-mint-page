@@ -4,7 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cashu Mint Information Display</title>
+    <title>Cashumints.space</title>
+    <!-- Plausible Analytics -->
+    <script>
+      // Inject Plausible Analytics with environment variables
+      (function() {
+        const domain = '%VITE_ANALYTICS_DOMAIN%' || 'cashumints.space';
+        const src = '%VITE_ANALYTICS_SRC%' || 'https://analytics.azzamo.net/js/script.js';
+        
+        const script = document.createElement('script');
+        script.defer = true;
+        script.setAttribute('data-domain', domain);
+        script.src = src;
+        document.head.appendChild(script);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

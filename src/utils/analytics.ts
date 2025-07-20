@@ -1,6 +1,6 @@
 // Plausible Analytics Configuration
 export const analyticsConfig = {
-  domain: import.meta.env.VITE_ANALYTICS_DOMAIN || 'mintpage.azzamo.net',
+  domain: import.meta.env.VITE_ANALYTICS_DOMAIN || 'cashumints.space',
   src: import.meta.env.VITE_ANALYTICS_SRC || 'https://analytics.azzamo.net/js/script.js',
   enabled: import.meta.env.VITE_ENABLE_ANALYTICS !== 'false' // enabled by default
 };
