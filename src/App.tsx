@@ -1,9 +1,33 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Discover from './pages/Discover';
 import MintPage from './pages/MintPage';
 import Header from './components/Header';
+import Footer from './components/Footer';
+
+function AppContent() {
+  const location = useLocation();
+  
+  // Don't show global footer on single mint pages (they have their own footer)
+  const isSingleMintPage = location.pathname !== '/' && 
+                          location.pathname !== '/discover' && 
+                          location.pathname.split('/').length > 1;
+
+  return (
+    <div className="min-h-screen bg-brand-background flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/*" element={<MintPage />} />
+        </Routes>
+      </main>
+      {!isSingleMintPage && <Footer />}
+    </div>
+  );
+}
 
 function App() {
   // Get base path from environment variable, default to '/'
@@ -13,14 +37,7 @@ function App() {
 
   return (
     <BrowserRouter basename={basePath}>
-      <div className="min-h-screen bg-brand-background">
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/*" element={<MintPage />} />
-        </Routes>
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 }
