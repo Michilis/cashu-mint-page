@@ -18,9 +18,11 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
+            <img 
+              src="https://cashumints.space/wp-content/uploads/2024/05/clean.png" 
+              alt="Cashu Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-xl font-bold text-white">Cashumints.space</span>
           </Link>
 

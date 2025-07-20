@@ -502,4 +502,4 @@ export const useReviews = (mintUrl: string) => {
     hasMoreReviews,
     isLoadingMore
   };
-};
+}; 

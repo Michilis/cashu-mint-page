@@ -1,40 +1,45 @@
 # Cashu Mint Page
 
-A modern, responsive web application for displaying Cashu mint information and user reviews. Built with React, TypeScript, and Vite, featuring real-time Nostr integration for decentralized reviews using the NIP-87 protocol.
+A modern, responsive web application for discovering and reviewing Cashu mints. Built with React, TypeScript, and Vite, featuring real-time Nostr integration for decentralized reviews using the NIP-87 protocol.
 
 🌐 **Live Demo**: [https://mintpage.azzamo.net](https://mintpage.azzamo.net)
 
 ## ✨ Features
 
-### 🏦 Mint Information Display
+### 🏦 Mint Discovery & Information
+- **Global mint directory** with search, filtering, and sorting
 - **Comprehensive mint details** including name, description, and technical information
 - **Real-time mint status** fetched from `/v1/info` endpoint
-- **Supported nuts and features** with detailed explanations
+- **Supported nuts and features** with detailed explanations and hover tooltips
 - **Contact information** and terms of service
 - **QR code generation** for easy mobile access
+- **Popular mints showcase** on homepage
 
 ### 📝 Decentralized Reviews System
 - **NIP-87 Protocol Implementation** for Cashu mint reviews
-- **Real-time review fetching** from multiple Nostr relays
+- **Real-time review fetching** from multiple Nostr relays using relay pool
 - **Browser extension signing** (Alby, nos2x, Flamingo support)
-- **User profile integration** with Nostr metadata
+- **User profile integration** with Nostr metadata and username display
 - **Rating system** (1-5 stars) with detailed feedback
 - **Review filtering and pagination**
+- **Review deduplication** by user pubkey
 
-
-### 🔐 Security & Privacy
-- **Signature verification** for all reviews
-- **Multi-relay architecture** for redundancy
-- **Content validation** and spam protection
-- **Browser extension authentication**
-- **No personal data collection**
-
-### 🎨 Modern UI/UX
+### 🧭 Navigation & UI
+- **Global header** with navigation links (Home, Discover, More info, Wallets)
+- **Discover page** showing all mints with search and filtering
 - **Responsive design** optimized for all devices
 - **Dark theme** with purple accent colors
 - **Smooth animations** and transitions
 - **Loading states** and error handling
 - **Accessible components** with proper ARIA labels
+
+### 🔐 Security & Privacy
+- **Signature verification** for all reviews
+- **Multi-relay architecture** with shared NDK instance for redundancy
+- **Content validation** and spam protection
+- **Browser extension authentication**
+- **No personal data collection**
+- **Privacy-focused analytics** (Plausible)
 
 ## 🛠️ Tech Stack
 
@@ -42,10 +47,11 @@ A modern, responsive web application for displaying Cashu mint information and u
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
 - **Routing**: React Router DOM
-- **Nostr**: NDK (Nostr Development Kit)
+- **Nostr**: NDK (Nostr Development Kit) with relay pool
 - **Icons**: Lucide React
 - **QR Codes**: qrcode.react
 - **HTTP Client**: Axios
+- **Analytics**: Plausible Analytics (optional)
 
 ## 🚀 Getting Started
 
@@ -59,7 +65,7 @@ A modern, responsive web application for displaying Cashu mint information and u
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-repo/cashu-mint-page.git
+   git clone https://github.com/Michilis/cashu-mint-page.git
    cd cashu-mint-page
    ```
 
@@ -204,8 +210,7 @@ The application includes privacy-focused analytics using Plausible Analytics:
 - **Privacy-focused**: No personal data collection or tracking
 - **Custom Events**: Tracks mint views, review submissions, and user interactions
 - **Lightweight**: Minimal performance impact
-
-The analytics script is loaded dynamically and respects the configuration settings.
+- **Global Integration**: Analytics script loaded in global header
 
 ## 📜 Scripts
 
@@ -265,6 +270,15 @@ This application implements [NIP-87](https://github.com/nostr-protocol/nips/blob
 - **Proper tagging**: `d`, `u`, `k`, `rating` tags
 - **Replaceable events**: NIP-33 compliance
 
+### Relay Pool Architecture
+
+The application uses a robust relay pool for better reliability and performance:
+
+- **Shared NDK Instance**: Single connection shared across the app
+- **Multiple Relays**: Redundant connections for better data availability
+- **Connection Optimization**: Efficient relay pool management
+- **Profile Caching**: Improved username fetching and display
+
 ### Supported Relays
 
 The application connects to multiple Nostr relays for better reliability:
@@ -286,12 +300,20 @@ To publish reviews, users need a Nostr browser extension:
 
 ## 📋 Usage
 
+### Discovering Mints
+
+1. **Homepage**: View popular mints and recent reviews
+2. **Discover Page**: Browse all mints with search and filtering
+3. **Search**: Find mints by name or URL
+4. **Filter**: Sort by popularity, rating, or date
+
 ### Viewing Mint Information
 
 1. Navigate to the application
-2. Enter a Cashu mint URL
+2. Enter a Cashu mint URL or browse from discover page
 3. View comprehensive mint details and features
 4. Check real-time status and supported protocols
+5. See detailed nut information with hover tooltips
 
 ### Reading Reviews
 
@@ -299,6 +321,7 @@ To publish reviews, users need a Nostr browser extension:
 - Filter by rating, date, or content length
 - View reviewer profiles and verification status
 - See aggregated ratings and statistics
+- Reviews are deduplicated by user pubkey
 
 ### Publishing Reviews
 
@@ -317,25 +340,33 @@ Reviews are published in this format:
 
 ## 🎯 Features in Detail
 
+### Navigation & Layout
+- **Global Header**: Consistent navigation across all pages
+- **Discover Page**: Comprehensive mint directory with search
+- **Conditional Footer**: Global footer on main pages, custom footer on mint pages
+- **Clean URLs**: Proper routing without protocol prefixes
+
 ### Review System
 - **Real-time fetching** from multiple Nostr relays
 - **Profile caching** for improved performance
 - **Spam detection** and content validation
 - **Rating aggregation** with proper statistics
 - **Pagination and filtering** for large datasets
+- **Username display** with profile fetching
 
 ### Mint Information
 - **API integration** with `/v1/info` endpoint
 - **Feature detection** for supported protocols
 - **Status monitoring** and health checks
 - **Contact information** parsing and display
+- **Detailed nut information** with official specs
 
 ### Security
 - **Signature verification** for all events
 - **Content validation** (length, format, spam detection)
 - **Rate limiting** and abuse prevention
 - **No tracking or analytics**
-
+- **Shared NDK instance** for optimized connections
 
 ## 🔗 Links
 

@@ -4,6 +4,7 @@ import { Bitcoin, Zap, Lock, Shield, Search, TrendingUp, Users, MessageSquare, A
 import { useGlobalReviews } from '../hooks/useGlobalReviews';
 import { usePopularMints } from '../hooks/usePopularMints';
 import ReviewCarousel from '../components/ReviewCarousel';
+import MintCarousel from '../components/MintCarousel';
 
 const features = [
   {
@@ -140,52 +141,7 @@ const Home: React.FC = () => {
               <span className="text-brand-text">Finding popular mints...</span>
             </div>
           ) : popularMints.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-              {popularMints.map((mint, index) => (
-                <Link
-                  key={mint.mintUrl}
-                  to={`/${mint.mintUrl.replace(/^https?:\/\//, '')}`}
-                  className="group bg-gray-800/30 backdrop-blur rounded-xl p-6 border border-gray-700 hover:border-brand-primary transition-all duration-300 hover:bg-gray-800/50"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-white">{mint.mintName}</h3>
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-4 w-4 text-brand-primary" />
-                      <span className="text-sm font-medium text-brand-primary">{mint.reviewCount}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.round(mint.averageRating) 
-                              ? 'text-yellow-400 fill-current' 
-                              : 'text-gray-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-brand-text">
-                      {mint.averageRating.toFixed(1)}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-brand-textDark group-hover:text-brand-text transition-colors">
-                    {mint.domain}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700">
-                    <span className="text-xs text-brand-textDark">
-                      #{index + 1} Most Reviewed
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-brand-textDark group-hover:text-brand-primary transition-colors" />
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <MintCarousel mints={popularMints} />
           ) : (
             <div className="text-center py-12 text-brand-textDark">
               <Globe className="h-12 w-12 mx-auto mb-4 text-gray-600" />

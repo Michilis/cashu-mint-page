@@ -99,14 +99,14 @@ export const initializeNDK = async (): Promise<NDK> => {
   console.log('📡 Relay URLs:', CASHU_RELAY_POOL);
   
   try {
-    const ndkInstance = new NDK({
+  const ndkInstance = new NDK({
       explicitRelayUrls: CASHU_RELAY_POOL,
       enableOutboxModel: true, // Enable for better data discovery across relays
-    });
+  });
 
     console.log('✅ NDK instance created, attempting to connect...');
-    
-    await ndkInstance.connect();
+
+  await ndkInstance.connect();
     console.log('✅ NDK connected to relay pool:', CASHU_RELAY_POOL.length, 'relays');
     
     // Test connection by subscribing to a simple filter
@@ -136,8 +136,8 @@ export const initializeNDK = async (): Promise<NDK> => {
       }
       testSub.stop();
     }, 10000); // Increased timeout to 10 seconds
-    
-    return ndkInstance;
+  
+  return ndkInstance;
   } catch (error) {
     console.error('❌ Failed to initialize NDK:', error);
     console.log('📝 Attempting to continue with limited functionality...');

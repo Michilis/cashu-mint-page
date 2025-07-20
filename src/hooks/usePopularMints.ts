@@ -30,55 +30,55 @@ export function usePopularMints(limit: number = 10) {
     let timeoutId: NodeJS.Timeout;
 
     const fetchPopularMints = async () => {
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
         setError(null);
-        mintStatsRef.current.clear();
+      mintStatsRef.current.clear();
 
         console.log('🔗 Initializing NDK for popular mints...');
         const ndk = await getSharedNDK();
         console.log('✅ NDK initialized successfully for popular mints');
 
-        console.log('📊 Fetching popular Cashu mints by review count...');
-        
+      console.log('📊 Fetching popular Cashu mints by review count...');
+
         // Filters for Cashu mint reviews (NIP-87)
         const filters = [
           { kinds: [MINT_RECOMMENDATION_KIND], limit: 100 },
           { kinds: [MINT_RECOMMENDATION_KIND], limit: 100, since: Math.floor(Date.now() / 1000) - 86400 * 30 } // Last 30 days
-        ];
+      ];
 
-        console.log('🔍 Popular mints filters:', filters);
+      console.log('🔍 Popular mints filters:', filters);
 
         sub = ndk.subscribe(filters, { closeOnEose: true });
-        
+
         let totalEvents = 0;
         let validReviews = 0;
         let uniqueMints = 0;
 
         sub.on('event', (event: any) => {
           totalEvents++;
-          
-          try {
-            // Extract mint URL from tags
+        
+        try {
+          // Extract mint URL from tags
             const uTag = event.tags.find((tag: any) => tag[0] === 'u');
             const dTag = event.tags.find((tag: any) => tag[0] === 'd');
             const kTag = event.tags.find((tag: any) => tag[0] === 'k');
             const ratingTag = event.tags.find((tag: any) => tag[0] === 'rating');
-
+          
             if (!uTag || !uTag[1]) {
               return; // Skip events without mint URL
             }
-
+          
             const mintUrl = uTag[1];
             const mintPubkey = dTag ? dTag[1] : '';
             const referencedKind = kTag ? kTag[1] : '';
             const rating = ratingTag ? parseInt(ratingTag[1]) : 5;
-
+          
             // Only process Cashu mint reviews (NIP-87)
             if (referencedKind !== '38172') {
-              return;
-            }
-
+            return;
+          }
+          
             // Extract domain from URL
             let domain = mintUrl;
             try {
@@ -90,10 +90,10 @@ export function usePopularMints(limit: number = 10) {
 
             // Extract mint name from domain
             const mintName = domain.replace(/^mint\./, '').replace(/^www\./, '');
-
+            
             // Update stats for this mint
             const existing = mintStatsRef.current.get(mintUrl) || {
-              mintName,
+                mintName,
               domain,
               reviews: new Map(), // Initialize reviews as a Map
               totalRating: 0,
@@ -131,65 +131,65 @@ export function usePopularMints(limit: number = 10) {
           }
         });
 
-        sub.on('eose', () => {
+      sub.on('eose', () => {
           console.log(`
 📊 Popular mints analysis complete:
   - Processed ${totalEvents} events
   - Found ${validReviews} valid Cashu reviews
   - Discovered ${uniqueMints} unique Cashu mints`);
+        
+        const mintsArray: PopularMint[] = Array.from(mintStatsRef.current.entries())
+          .map(([mintUrl, stats]) => ({
+            mintUrl,
+            mintName: stats.mintName,
+            domain: stats.domain,
+              reviewCount: stats.reviews.size, // Count unique reviews
+              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
+            lastReviewAt: stats.lastReviewAt
+          }))
+            .sort((a, b) => b.reviewCount - a.reviewCount)
+          .slice(0, limit);
+        
+          console.log(`🏆 Top ${limit} popular Cashu mints:`, mintsArray.map(m => 
+            `${m.mintName} (${m.reviewCount} reviews, ${m.averageRating.toFixed(1)} avg)`
+          ));
+        
+        setPopularMints(mintsArray);
+        setLoading(false);
+        sub.stop();
+      });
 
+      // Timeout fallback
+        timeoutId = setTimeout(() => {
+        if (loading) {
           const mintsArray: PopularMint[] = Array.from(mintStatsRef.current.entries())
             .map(([mintUrl, stats]) => ({
               mintUrl,
               mintName: stats.mintName,
               domain: stats.domain,
-              reviewCount: stats.reviews.size, // Count unique reviews
-              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
+                reviewCount: stats.reviews.size, // Count unique reviews
+                averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
               lastReviewAt: stats.lastReviewAt
             }))
             .sort((a, b) => b.reviewCount - a.reviewCount)
             .slice(0, limit);
-
-          console.log(`🏆 Top ${limit} popular Cashu mints:`, mintsArray.map(m => 
-            `${m.mintName} (${m.reviewCount} reviews, ${m.averageRating.toFixed(1)} avg)`
-          ));
-
+          
           setPopularMints(mintsArray);
           setLoading(false);
+          
+          console.log(`⏰ Popular mints timeout: Found ${mintsArray.length} mints`);
           sub.stop();
-        });
-
-        // Timeout fallback
-        timeoutId = setTimeout(() => {
-          if (loading) {
-            const mintsArray: PopularMint[] = Array.from(mintStatsRef.current.entries())
-              .map(([mintUrl, stats]) => ({
-                mintUrl,
-                mintName: stats.mintName,
-                domain: stats.domain,
-                reviewCount: stats.reviews.size, // Count unique reviews
-                averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
-                lastReviewAt: stats.lastReviewAt
-              }))
-              .sort((a, b) => b.reviewCount - a.reviewCount)
-              .slice(0, limit);
-            
-            setPopularMints(mintsArray);
-            setLoading(false);
-            
-            console.log(`⏰ Popular mints timeout: Found ${mintsArray.length} mints`);
-            sub.stop();
-          }
+        }
         }, 20000); // Increased to 20 seconds for real data only
 
-      } catch (error) {
+    } catch (error) {
         console.error('❌ Error fetching popular mints:', error);
         setError('Failed to fetch popular mints');
-        setLoading(false);
-      }
+      setLoading(false);
+    }
     };
 
-    fetchPopularMints();
+      fetchPopularMints();
 
     return () => {
       if (sub) {

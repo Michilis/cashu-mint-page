@@ -50,33 +50,33 @@ const NutSupportCard: React.FC<NutSupportCardProps> = ({ mintInfo }) => {
           return (
             <div key={nutKey} className="relative group">
               <a 
-                href={getNutDocUrl(nutKey)}
-                target="_blank"
-                rel="noopener noreferrer"
+            href={getNutDocUrl(nutKey)}
+            target="_blank"
+            rel="noopener noreferrer"
                 className="block bg-gray-700/50 rounded-lg p-2 hover:bg-gray-700 transition-all duration-200"
                 onMouseEnter={() => setHoveredNut(nutKey)}
                 onMouseLeave={() => setHoveredNut(null)}
-              >
-                <div className="flex flex-col relative">
+          >
+            <div className="flex flex-col relative">
                   <div className="bg-gray-600 text-brand-primary px-1.5 py-0.5 rounded text-xs font-medium text-center mb-1 group-hover:bg-gray-500 transition-colors flex items-center justify-center gap-1">
-                    NUT-{formatNutNumber(nutKey)}
+                NUT-{formatNutNumber(nutKey)}
                     <Info className="w-3 h-3 opacity-60" />
                     <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="min-w-0">
-                    {(nutInfo.min_amount !== undefined || nutInfo.max_amount !== undefined) && (
-                      <p className="text-[9px] sm:text-xs text-brand-textDark mt-0.5 text-center">
-                        {nutInfo.min_amount !== undefined ? `${nutInfo.min_amount}` : '0'}
-                        {nutInfo.min_amount !== undefined && nutInfo.max_amount !== undefined ? '-' : ''}
-                        {nutInfo.max_amount !== undefined ? nutInfo.max_amount : '∞'}
-                        {nutInfo.unit && (
-                          <span className="ml-0.5">{nutInfo.unit}</span>
-                        )}
-                      </p>
+              </div>
+              <div className="min-w-0">
+                {(nutInfo.min_amount !== undefined || nutInfo.max_amount !== undefined) && (
+                  <p className="text-[9px] sm:text-xs text-brand-textDark mt-0.5 text-center">
+                    {nutInfo.min_amount !== undefined ? `${nutInfo.min_amount}` : '0'}
+                    {nutInfo.min_amount !== undefined && nutInfo.max_amount !== undefined ? '-' : ''}
+                    {nutInfo.max_amount !== undefined ? nutInfo.max_amount : '∞'}
+                    {nutInfo.unit && (
+                      <span className="ml-0.5">{nutInfo.unit}</span>
                     )}
-                  </div>
-                </div>
-              </a>
+                  </p>
+                )}
+              </div>
+            </div>
+          </a>
               
               {/* Hover Tooltip */}
               {hoveredNut === nutKey && nutDetails && (

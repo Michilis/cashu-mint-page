@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Star, MessageSquare, Globe, Filter, ArrowRight, Loader, TrendingUp } from 'lucide-react';
-import { usePopularMints } from '../hooks/usePopularMints';
+import { useAllMints } from '../hooks/useAllMints';
 
 interface MintData {
   mintUrl: string;
@@ -15,12 +15,12 @@ const Discover: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'reviews' | 'rating' | 'name'>('reviews');
   const [filterMinReviews, setFilterMinReviews] = useState<number>(0);
-  const { popularMints, loading } = usePopularMints();
+  const { mints, loading, error } = useAllMints();
 
   const [filteredMints, setFilteredMints] = useState<MintData[]>([]);
 
   useEffect(() => {
-    let filtered = [...popularMints];
+    let filtered = [...mints];
 
     // Apply search filter
     if (searchTerm) {
@@ -50,13 +50,7 @@ const Discover: React.FC = () => {
     });
 
     setFilteredMints(filtered);
-  }, [popularMints, searchTerm, sortBy, filterMinReviews]);
-
-  const stats = [
-    { label: 'Total Mints', value: popularMints.length, icon: <Globe className="h-5 w-5" /> },
-    { label: 'Total Reviews', value: popularMints.reduce((sum, mint) => sum + mint.reviewCount, 0), icon: <MessageSquare className="h-5 w-5" /> },
-    { label: 'Avg Rating', value: popularMints.length > 0 ? (popularMints.reduce((sum, mint) => sum + mint.averageRating, 0) / popularMints.length).toFixed(1) : '0.0', icon: <Star className="h-5 w-5" /> },
-  ];
+  }, [mints, searchTerm, sortBy, filterMinReviews]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white">
@@ -98,9 +92,9 @@ const Discover: React.FC = () => {
                     onChange={(e) => setSortBy(e.target.value as 'reviews' | 'rating' | 'name')}
                     className="bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                   >
+                    <option value="name">Sort by Name</option>
                     <option value="reviews">Sort by Reviews</option>
                     <option value="rating">Sort by Rating</option>
-                    <option value="name">Sort by Name</option>
                   </select>
                 </div>
                 
@@ -111,27 +105,14 @@ const Discover: React.FC = () => {
                     onChange={(e) => setFilterMinReviews(Number(e.target.value))}
                     className="bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                   >
-                    <option value={0}>All Reviews</option>
-                    <option value={1}>1+ Reviews</option>
+                    <option value={0}>All Mints</option>
+                    <option value={1}>With Reviews</option>
                     <option value={5}>5+ Reviews</option>
                     <option value={10}>10+ Reviews</option>
                     <option value={20}>20+ Reviews</option>
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mt-12">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex items-center justify-center text-brand-primary mb-2">
-                    {stat.icon}
-                  </div>
-                  <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-sm text-brand-textDark">{stat.label}</div>
-                </div>
-              ))}
             </div>
             
           </div>
@@ -151,12 +132,19 @@ const Discover: React.FC = () => {
             {!loading && (
               <p className="text-xl text-brand-text">
                 {searchTerm || filterMinReviews > 0 
-                  ? `Showing ${filteredMints.length} of ${popularMints.length} mints` 
-                  : 'All available Cashu mints with community reviews'
+                  ? `Showing ${filteredMints.length} of ${mints.length} mints` 
+                  : 'All available Cashu mints from the Nostr network'
                 }
               </p>
             )}
           </div>
+
+          {error && (
+            <div className="text-center py-12 text-red-400">
+              <p className="text-lg mb-2">Error loading mints</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -171,48 +159,43 @@ const Discover: React.FC = () => {
                   to={`/${mint.mintUrl.replace(/^https?:\/\//, '')}`}
                   className="group bg-gray-800/30 backdrop-blur rounded-xl p-6 border border-gray-700 hover:border-brand-primary transition-all duration-300 hover:bg-gray-800/50"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 bg-brand-primary/20 rounded-lg flex items-center justify-center">
-                      <span className="text-sm font-bold text-brand-primary">
-                        {mint.mintName.charAt(0)}
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-white">{mint.mintName}</h3>
                     <div className="flex items-center gap-1">
                       <MessageSquare className="h-4 w-4 text-brand-primary" />
                       <span className="text-sm font-medium text-brand-primary">{mint.reviewCount}</span>
                     </div>
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-white mb-2">{mint.mintName}</h3>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.round(mint.averageRating) 
-                              ? 'text-yellow-400 fill-current' 
-                              : 'text-gray-600'
-                          }`}
-                        />
-                      ))}
+                  {mint.reviewCount > 0 ? (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < Math.round(mint.averageRating) 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-brand-text">
+                        {mint.averageRating.toFixed(1)}
+                      </span>
                     </div>
-                    <span className="text-xs text-brand-text">
-                      {mint.averageRating.toFixed(1)}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className="mb-2">
+                      <span className="text-xs text-brand-textDark">Not rated</span>
+                    </div>
+                  )}
                   
                   <p className="text-sm text-brand-textDark group-hover:text-brand-text transition-colors">
                     {mint.domain}
                   </p>
                   
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700">
-                    <span className="text-xs text-brand-textDark">
-                      {sortBy === 'reviews' && `#${index + 1} Most Reviewed`}
-                      {sortBy === 'rating' && `#${index + 1} Highest Rated`}
-                      {sortBy === 'name' && 'Alphabetical'}
-                    </span>
+                  <div className="flex items-center justify-end mt-3 pt-3 border-t border-gray-700">
                     <ArrowRight className="h-4 w-4 text-brand-textDark group-hover:text-brand-primary transition-colors" />
                   </div>
                 </Link>
