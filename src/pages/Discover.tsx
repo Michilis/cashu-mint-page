@@ -168,7 +168,7 @@ const Discover: React.FC = () => {
               {filteredMints.map((mint, index) => (
                 <Link
                   key={mint.mintUrl}
-                  to={`/${mint.mintUrl}`}
+                  to={`/${mint.mintUrl.replace(/^https?:\/\//, '')}`}
                   className="group bg-gray-800/30 backdrop-blur rounded-xl p-6 border border-gray-700 hover:border-brand-primary transition-all duration-300 hover:bg-gray-800/50"
                 >
                   <div className="flex items-center justify-between mb-4">

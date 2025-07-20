@@ -16,12 +16,22 @@ import MintHeader from '../components/MintHeader';
 
 const MintPage: React.FC = () => {
   const location = useLocation();
-  // Extract the full path excluding the leading slash
-  const mintPath = location.pathname.slice(1);
+  // Extract the full path excluding the leading slash and clean URL
+  const rawMintPath = location.pathname.slice(1);
+  const mintPath = rawMintPath.replace(/^https?:\/\//, '');
   const [mintInfo, setMintInfo] = useState<MintInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const addMint = useMintStore((state) => state.addMint);
+
+  // Redirect if URL contains protocol prefixes
+  useEffect(() => {
+    if (rawMintPath !== mintPath) {
+      // URL contains protocol prefixes, redirect to clean URL
+      window.history.replaceState(null, '', `/${mintPath}`);
+      console.log('🔄 Redirected from', rawMintPath, 'to', mintPath);
+    }
+  }, [rawMintPath, mintPath]);
 
   const fetchMintInfo = async () => {
     if (!mintPath) {

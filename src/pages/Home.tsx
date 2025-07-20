@@ -43,7 +43,7 @@ const Home: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Remove protocol if present and navigate
+      // Remove protocol prefixes if present and navigate
       const cleanTerm = searchTerm.replace(/^https?:\/\//, '');
       navigate(`/${cleanTerm}`);
     }
@@ -144,7 +144,7 @@ const Home: React.FC = () => {
               {popularMints.map((mint, index) => (
                 <Link
                   key={mint.mintUrl}
-                  to={`/${mint.mintUrl}`}
+                  to={`/${mint.mintUrl.replace(/^https?:\/\//, '')}`}
                   className="group bg-gray-800/30 backdrop-blur rounded-xl p-6 border border-gray-700 hover:border-brand-primary transition-all duration-300 hover:bg-gray-800/50"
                 >
                   <div className="flex items-center justify-between mb-4">

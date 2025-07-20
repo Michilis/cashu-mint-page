@@ -57,7 +57,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews, loading }) => 
         className="review-carousel"
       >
         {reviews.map((review, index) => {
-          // Extract mint domain for routing
+          // Extract mint domain for routing and remove protocol prefixes
           const mintDomain = review.mintUrl.replace(/^https?:\/\//, '');
           
           return (

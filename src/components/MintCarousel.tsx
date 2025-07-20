@@ -33,6 +33,7 @@ const MintCarousel: React.FC<MintCarouselProps> = ({ mints }) => {
         className="mint-carousel"
       >
         {mints.map((mint, index) => {
+          // Extract domain and remove protocol prefixes
           const domain = mint.url?.replace(/^https?:\/\//, '') || 
                         mint.urls?.[0]?.replace(/^https?:\/\//, '');
           
