@@ -16,10 +16,19 @@ export interface MintInfo {
   nips?: Record<string, NipInfo>;
 }
 
+export interface NutMethod {
+  method: string;
+  unit?: string;
+  min_amount?: number;
+  max_amount?: number;
+  description?: boolean;
+  commands?: string[];
+}
+
 export interface NutInfo {
-  methods?: string[];
+  methods?: NutMethod[];
   disabled?: boolean;
-  supported?: boolean;
+  supported?: boolean | NutMethod[];
   unit?: string;
   min_amount?: number;
   max_amount?: number;

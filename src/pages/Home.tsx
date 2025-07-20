@@ -108,7 +108,7 @@ const Home: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-white">Latest Cashu Mint Reviews</h2>
             </div>
             <p className="text-xl text-brand-text max-w-2xl mx-auto">
-              See what the community is saying about Cashu mints. Real reviews from real users using the NIP-87 protocol.
+              See what the community is saying about Cashu mints.
             </p>
           </div>
           
@@ -117,7 +117,7 @@ const Home: React.FC = () => {
           {recentReviews.length > 0 && (
             <div className="text-center mt-8">
               <p className="text-brand-textDark text-sm">
-                Showing latest reviews • Powered by NIP-87 protocol
+                Showing latest reviews • Powered by NIP-87
               </p>
             </div>
           )}
@@ -147,19 +147,13 @@ const Home: React.FC = () => {
                   to={`/${mint.mintUrl.replace(/^https?:\/\//, '')}`}
                   className="group bg-gray-800/30 backdrop-blur rounded-xl p-6 border border-gray-700 hover:border-brand-primary transition-all duration-300 hover:bg-gray-800/50"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 bg-brand-primary/20 rounded-lg flex items-center justify-center">
-                      <span className="text-sm font-bold text-brand-primary">
-                        {mint.mintName.charAt(0)}
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-white">{mint.mintName}</h3>
                     <div className="flex items-center gap-1">
                       <MessageSquare className="h-4 w-4 text-brand-primary" />
                       <span className="text-sm font-medium text-brand-primary">{mint.reviewCount}</span>
                     </div>
                   </div>
-                  
-                  <h3 className="text-lg font-semibold text-white mb-2">{mint.mintName}</h3>
                   
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex items-center">
@@ -240,7 +234,7 @@ const Home: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => document.querySelector('input')?.focus()}
+              onClick={() => navigate('/discover')}
               className="bg-brand-primary hover:bg-brand-primary/90 text-white px-8 py-3 rounded-xl font-semibold transition-colors"
             >
               Explore Mints

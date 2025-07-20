@@ -16,10 +16,11 @@ export function usePopularMints(limit: number = 10) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Track reviews per mint, deduplicated by pubkey (one review per user)
   const mintStatsRef = useRef<Map<string, {
     mintName: string;
     domain: string;
-    reviews: number;
+    reviews: Map<string, any>; // pubkey -> review data
     totalRating: number;
     lastReviewAt: number;
   }>>(new Map());
@@ -94,17 +95,23 @@ export function usePopularMints(limit: number = 10) {
             const existing = mintStatsRef.current.get(mintUrl) || {
               mintName,
               domain,
-              reviews: 0,
+              reviews: new Map(), // Initialize reviews as a Map
               totalRating: 0,
               lastReviewAt: event.created_at
             };
 
-            existing.reviews++;
-            existing.totalRating += rating;
-            existing.lastReviewAt = Math.max(existing.lastReviewAt, event.created_at);
+            // Check if this user has already reviewed this mint
+            if (!existing.reviews.has(event.pubkey)) {
+              existing.reviews.set(event.pubkey, {
+                rating,
+                created_at: event.created_at
+              });
+              existing.totalRating += rating;
+              existing.lastReviewAt = Math.max(existing.lastReviewAt, event.created_at);
+              validReviews++;
+            }
 
             mintStatsRef.current.set(mintUrl, existing);
-            validReviews++;
             uniqueMints = mintStatsRef.current.size;
 
             console.log(`📝 Parsing review:
@@ -136,8 +143,8 @@ export function usePopularMints(limit: number = 10) {
               mintUrl,
               mintName: stats.mintName,
               domain: stats.domain,
-              reviewCount: stats.reviews,
-              averageRating: stats.totalRating / stats.reviews,
+              reviewCount: stats.reviews.size, // Count unique reviews
+              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
               lastReviewAt: stats.lastReviewAt
             }))
             .sort((a, b) => b.reviewCount - a.reviewCount)
@@ -160,8 +167,8 @@ export function usePopularMints(limit: number = 10) {
                 mintUrl,
                 mintName: stats.mintName,
                 domain: stats.domain,
-                reviewCount: stats.reviews,
-                averageRating: stats.totalRating / stats.reviews,
+                reviewCount: stats.reviews.size, // Count unique reviews
+                averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
                 lastReviewAt: stats.lastReviewAt
               }))
               .sort((a, b) => b.reviewCount - a.reviewCount)

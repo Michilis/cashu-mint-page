@@ -331,18 +331,7 @@ const ReviewItem: React.FC<ReviewItemProps> = ({ review }) => {
           </div>
         </div>
 
-        {/* Profile Link */}
-        {profile?.website && (
-          <a
-            href={profile.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-gray-300 transition-colors flex-shrink-0 ml-2"
-            title="Visit profile website"
-          >
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        )}
+        {/* Profile Link - REMOVED */}
       </div>
       
       {/* Review Content */}
@@ -357,15 +346,7 @@ const ReviewItem: React.FC<ReviewItemProps> = ({ review }) => {
           </div>
         )}
 
-        {/* Lightning Address (if available) */}
-        {(profile?.lud16 || profile?.lud06) && (
-          <div className="flex items-center space-x-1 bg-yellow-400/10 px-2 py-1 rounded">
-            <span className="text-yellow-400">⚡</span>
-            <span className="text-gray-400 font-mono text-xs">
-              {profile.lud16 || profile.lud06}
-            </span>
-          </div>
-        )}
+
       </div>
     </div>
   );

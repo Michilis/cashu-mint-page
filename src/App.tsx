@@ -4,7 +4,6 @@ import Home from './pages/Home';
 import Discover from './pages/Discover';
 import MintPage from './pages/MintPage';
 import Header from './components/Header';
-import DebugInfo from './components/DebugInfo';
 
 function App() {
   // Get base path from environment variable, default to '/'
@@ -21,7 +20,6 @@ function App() {
           <Route path="/discover" element={<Discover />} />
           <Route path="/*" element={<MintPage />} />
         </Routes>
-        <DebugInfo />
       </div>
     </BrowserRouter>
   );
