@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -33,6 +34,21 @@ const Footer: React.FC = () => {
               </svg>
               <span>GitHub</span>
             </a>
+          </div>
+
+          <div className="flex items-center justify-center space-x-6 mb-6">
+            <Link
+              to="/terms-of-use"
+              className="text-brand-textDark hover:text-brand-primary transition-colors"
+            >
+              Terms of Use
+            </Link>
+            <Link
+              to="/privacy-policy"
+              className="text-brand-textDark hover:text-brand-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
           </div>
 
           <p className="text-sm">
