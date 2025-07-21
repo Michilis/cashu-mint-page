@@ -109,9 +109,29 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl }) => {
 
   return (
     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+      {/* Mobile: Write Review button above filters */}
+      <div className="mb-4 md:hidden flex justify-end">
+        {!showReviewForm && (
+          <button
+            onClick={() => setShowReviewForm(true)}
+            disabled={connectionStatus !== 'connected'}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+          >
+            {connectionStatus !== 'connected' ? 'Connecting...' : 'Write Review'}
+          </button>
+        )}
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-white">Mint Reviews</h2>
         <div className="flex items-center gap-4">
+          {/* Desktop: Write Review button next to filters */}
+          <button
+            onClick={() => setShowReviewForm(true)}
+            disabled={connectionStatus !== 'connected' || showReviewForm}
+            className="hidden md:inline-flex px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+          >
+            {connectionStatus !== 'connected' ? 'Connecting...' : 'Write Review'}
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
@@ -329,11 +349,12 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl }) => {
       <div className="mt-8 pt-6 border-t border-gray-700">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-white">Write a Review</h3>
+          {/* Hide the button here on mobile, show only on desktop */}
           {!showReviewForm && (
             <button
               onClick={() => setShowReviewForm(true)}
               disabled={connectionStatus !== 'connected'}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+              className="hidden md:inline-flex px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
             >
               {connectionStatus !== 'connected' ? 'Connecting...' : 'Write Review'}
             </button>
