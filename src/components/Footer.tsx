@@ -49,6 +49,12 @@ const Footer: React.FC = () => {
             >
               Privacy Policy
             </Link>
+            <Link
+              to="/disclaimer"
+              className="text-brand-textDark hover:text-brand-primary transition-colors"
+            >
+              Disclaimer
+            </Link>
           </div>
 
           <p className="text-sm">

@@ -5,6 +5,7 @@ import Discover from './pages/Discover';
 import MintPage from './pages/MintPage';
 import TermsOfUse from './pages/TermsOfUse';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Disclaimer from './pages/Disclaimer';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -25,6 +26,7 @@ function AppContent() {
           <Route path="/discover" element={<Discover />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/*" element={<MintPage />} />
         </Routes>
       </main>

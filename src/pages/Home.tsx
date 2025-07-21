@@ -83,19 +83,7 @@ const Home: React.FC = () => {
                 </button>
               </div>
             </form>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex items-center justify-center text-brand-primary mb-2">
-                    {stat.icon}
-                  </div>
-                  <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-sm text-brand-textDark">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+            {/* Stats section removed */}
           </div>
         </div>
       </div>

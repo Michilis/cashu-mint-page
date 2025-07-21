@@ -54,25 +54,28 @@ const InfoCard: React.FC<InfoCardProps> = ({ mintInfo, showMotd, showTos, showIc
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="flex items-start">
-          <Key className="text-brand-primary mr-2 h-5 w-5 mt-1 flex-shrink-0" />
-          <div className="flex-grow">
-            <p className="text-white font-semibold">Public Key</p>
-            <div className="flex items-center group">
-              <p className="text-brand-text break-all text-sm mr-2">{mintInfo.pubkey}</p>
-              <button
-                onClick={() => handleCopy(mintInfo.pubkey, 'pubkey')}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                {copiedStates['pubkey'] ? (
-                  <Check className="h-4 w-4 text-green-400" />
-                ) : (
-                  <Copy className="h-4 w-4 text-brand-text hover:text-brand-primary" />
-                )}
-              </button>
+        {/* Only show public key if present and non-empty */}
+        {mintInfo.pubkey && mintInfo.pubkey.trim() !== '' && (
+          <div className="flex items-start">
+            <Key className="text-brand-primary mr-2 h-5 w-5 mt-1 flex-shrink-0" />
+            <div className="flex-grow">
+              <p className="text-white font-semibold">Public Key</p>
+              <div className="flex items-center group">
+                <p className="text-brand-text break-all text-sm mr-2">{mintInfo.pubkey}</p>
+                <button
+                  onClick={() => handleCopy(mintInfo.pubkey, 'pubkey')}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {copiedStates['pubkey'] ? (
+                    <Check className="h-4 w-4 text-green-400" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-brand-text hover:text-brand-primary" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
         
         {(mintInfo.url || (mintInfo.urls && mintInfo.urls.length > 0)) && (
           <div className="flex items-start">
