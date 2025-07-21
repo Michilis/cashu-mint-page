@@ -24,23 +24,6 @@ A modern, responsive web application for discovering and reviewing Cashu mints. 
 - **Review filtering and pagination**
 - **Review deduplication** by user pubkey
 
-### 🧭 Navigation & UI
-- **Global header** with navigation links (Home, Discover, More info, Wallets)
-- **Discover page** showing all mints with search and filtering
-- **Responsive design** optimized for all devices
-- **Dark theme** with purple accent colors
-- **Smooth animations** and transitions
-- **Loading states** and error handling
-- **Accessible components** with proper ARIA labels
-
-### 🔐 Security & Privacy
-- **Signature verification** for all reviews
-- **Multi-relay architecture** with shared NDK instance for redundancy
-- **Content validation** and spam protection
-- **Browser extension authentication**
-- **No personal data collection**
-- **Privacy-focused analytics** (Plausible)
-
 
 ## 🚀 Getting Started
 
