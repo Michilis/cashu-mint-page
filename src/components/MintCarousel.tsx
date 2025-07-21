@@ -58,7 +58,7 @@ const MintCarousel: React.FC<MintCarouselProps> = ({ mints, loading }) => {
         {mints.map((mint, index) => {
           // Extract mint domain for routing and remove protocol prefixes
           const mintDomain = mint.mintUrl.replace(/^https?:\/\//, '');
-          
+
           return (
             <SwiperSlide key={`${mint.mintUrl}-${index}`}>
               <Link
@@ -84,7 +84,7 @@ const MintCarousel: React.FC<MintCarouselProps> = ({ mints, loading }) => {
                   </div>
                   <ExternalLink className="h-4 w-4 text-brand-textDark opacity-0 group-hover:opacity-100 transition-all" />
                 </div>
-
+                
                 {/* Review Count */}
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex items-center gap-1">
