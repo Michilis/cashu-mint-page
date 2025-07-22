@@ -4,6 +4,7 @@ import { getMintInfoByDomain } from '../services/api';
 import { MintInfo } from '../types';
 import { useMintStore } from '../store/mintStore';
 import { trackMintView, trackMintInfoFetch } from '../utils/analytics';
+import { useSEO, createMintStructuredData } from '../hooks/useSEO';
 import InfoSection from '../components/InfoSection';
 import ContactCard from '../components/cards/ContactCard';
 import NutSupportCard from '../components/cards/NutSupportCard';
@@ -53,7 +54,6 @@ const MintPage: React.FC = () => {
       
       setMintInfo(data);
       addMint(mintPath, data);
-      document.title = `${data.name || mintPath} Mint Info`;
       
       // Track successful mint info fetch
       trackMintInfoFetch(data.url || mintPath, true);
@@ -79,6 +79,23 @@ const MintPage: React.FC = () => {
       trackMintView(mintInfo.url || mintPath);
     }
   }, [mintInfo, mintPath]);
+
+  // SEO meta tags for mint page
+  const mintDisplayName = mintInfo?.name || mintPath;
+  const pageTitle = mintInfo ? `${mintDisplayName} Mint – Reviews, NUT Support & Wallets | CashuMints.space` : undefined;
+  const pageDescription = mintInfo ? `See what users think of ${mintDisplayName} mint. View NUT support, wallet compatibility, and community reviews.` : undefined;
+  const canonicalUrl = `https://cashumints.space/${mintPath}`;
+  const keywords = mintInfo ? `cashu, ${mintDisplayName}, mint, bitcoin, ecash, reviews, nuts, wallets, ${mintPath}` : undefined;
+  const structuredData = mintInfo ? createMintStructuredData(mintInfo, mintPath) : undefined;
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    keywords,
+    canonicalUrl,
+    ogType: 'article',
+    structuredData,
+  });
 
   const showContact = import.meta.env.VITE_ENABLE_CONTACT === 'true' && mintInfo?.contact;
   const showNutTable = import.meta.env.VITE_ENABLE_NUT_TABLE === 'true' && mintInfo?.nuts;

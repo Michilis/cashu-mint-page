@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Star, MessageSquare, Globe, Filter, ArrowRight, Loader, TrendingUp } from 'lucide-react';
 import { useAllMints } from '../hooks/useAllMints';
+import { useSEO } from '../hooks/useSEO';
 
 interface MintData {
   mintUrl: string;
@@ -18,6 +19,15 @@ const Discover: React.FC = () => {
   const { mints, loading, error } = useAllMints();
 
   const [filteredMints, setFilteredMints] = useState<MintData[]>([]);
+
+  // SEO meta tags for discover page
+  useSEO({
+    title: 'Discover Cashu Mints - Community Reviews & Ratings | CashuMints.space',
+    description: 'Browse all Cashu mints with community reviews, ratings, and technical details. Find the perfect mint for your Bitcoin ecash needs.',
+    keywords: 'cashu mints, bitcoin ecash, discover mints, mint reviews, mint ratings, cashu directory, bitcoin privacy',
+    canonicalUrl: 'https://cashumints.space/discover',
+    ogType: 'website'
+  });
 
   useEffect(() => {
     let filtered = [...mints];

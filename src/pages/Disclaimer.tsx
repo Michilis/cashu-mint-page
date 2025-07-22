@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 const Disclaimer: React.FC = () => {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
+
+  // SEO meta tags for disclaimer page
+  useSEO({
+    title: 'Disclaimer - CashuMints.space',
+    description: 'Read our disclaimer regarding the use of CashuMints.space and the information about Cashu mints listed on our directory.',
+    keywords: 'disclaimer, cashu mints, legal, liability, risk',
+    canonicalUrl: 'https://cashumints.space/disclaimer',
+    ogType: 'article'
+  });
 
   useEffect(() => {
     const fetchContent = async () => {

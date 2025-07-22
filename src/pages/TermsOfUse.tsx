@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 const TermsOfUse: React.FC = () => {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
+
+  // SEO meta tags for terms of use page
+  useSEO({
+    title: 'Terms of Use - CashuMints.space',
+    description: 'Read our terms of use for CashuMints.space, the directory of trusted Cashu mints with community reviews.',
+    keywords: 'terms of use, cashu mints, legal, service terms',
+    canonicalUrl: 'https://cashumints.space/terms-of-use',
+    ogType: 'article'
+  });
 
   useEffect(() => {
     const fetchContent = async () => {

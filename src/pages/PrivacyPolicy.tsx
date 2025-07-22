@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 const PrivacyPolicy: React.FC = () => {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
+
+  // SEO meta tags for privacy policy page
+  useSEO({
+    title: 'Privacy Policy - CashuMints.space',
+    description: 'Read our privacy policy for CashuMints.space. Learn how we protect your data when using our Cashu mint directory.',
+    keywords: 'privacy policy, cashu mints, data protection, privacy',
+    canonicalUrl: 'https://cashumints.space/privacy-policy',
+    ogType: 'article'
+  });
 
   useEffect(() => {
     const fetchContent = async () => {
