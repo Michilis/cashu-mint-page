@@ -1,33 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bitcoin, Zap, Lock, Shield, Search, TrendingUp, Users, MessageSquare, ArrowRight, Star, Globe, Loader } from 'lucide-react';
+import { Search, TrendingUp, Users, MessageSquare, ArrowRight, Star, Globe, Loader } from 'lucide-react';
 import { useGlobalReviews } from '../hooks/useGlobalReviews';
 import { usePopularMints } from '../hooks/usePopularMints';
 import ReviewCarousel from '../components/ReviewCarousel';
 import MintCarousel from '../components/MintCarousel';
 
-const features = [
-  {
-    icon: <Bitcoin className="h-6 w-6" />,
-    title: "Bitcoin-Native",
-    description: "Built on Bitcoin and Lightning Network for secure, instant transactions"
-  },
-  {
-    icon: <Zap className="h-6 w-6" />,
-    title: "Lightning Fast",
-    description: "Experience instant transfers with Lightning Network integration"
-  },
-  {
-    icon: <Lock className="h-6 w-6" />,
-    title: "Privacy First",
-    description: "Enhanced privacy with Chaumian blind signatures"
-  },
-  {
-    icon: <Shield className="h-6 w-6" />,
-    title: "Secure by Design",
-    description: "Built with security best practices and continuous auditing"
-  }
-];
+
 
 const stats = [
   { label: 'Cashu Mints', value: '50+', icon: <Globe className="h-5 w-5" /> },
@@ -103,13 +82,7 @@ const Home: React.FC = () => {
           
           <ReviewCarousel reviews={recentReviews} loading={reviewsLoading} />
           
-          {recentReviews.length > 0 && (
-            <div className="text-center mt-8">
-              <p className="text-brand-textDark text-sm">
-                Showing latest reviews • Powered by NIP-87
-              </p>
-            </div>
-          )}
+
         </div>
       </section>
 
@@ -140,32 +113,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-gray-900/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose Cashu?</h2>
-            <p className="text-xl text-brand-text">
-              The future of private Bitcoin transactions
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="text-center p-6 bg-gray-800/20 rounded-xl backdrop-blur border border-gray-700/50 hover:border-brand-primary/50 transition-all duration-300"
-              >
-                <div className="text-brand-primary mb-4 flex justify-center">
-                  {feature.icon}
-                </div>
-                <h3 className="text-lg font-semibold mb-3 text-white">{feature.title}</h3>
-                <p className="text-brand-text text-sm leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-brand-primary/10 to-purple-600/10">
