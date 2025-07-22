@@ -150,19 +150,20 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl, mintName }) => {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {/* Write Review button - shows first on mobile, second on desktop */}
+          <button
+            onClick={() => setShowReviewForm(!showReviewForm)}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors order-1 sm:order-2"
+          >
+            Write Review
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors order-2 sm:order-1"
           >
             <Filter className="w-4 h-4" />
             Filters
-          </button>
-          <button
-            onClick={() => setShowReviewForm(!showReviewForm)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            Write Review
           </button>
         </div>
       </div>

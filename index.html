@@ -2,9 +2,108 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/cashu-logo.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/cashu-logo.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/cashu-logo.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/cashu-logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/cashu-logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cashu Mint Information Display</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Explore Trusted Cashu Mints - Cashumints.space</title>
+    <meta name="title" content="Explore Trusted Cashu Mints - Cashumints.space" />
+    <meta name="description" content="Find and compare trusted Cashu mints. View supported NUTs, user reviews, and wallet compatibility. Discover how to safely use Cashu." />
+    <meta name="keywords" content="cashu, bitcoin, ecash, mint, cryptocurrency, privacy, anonymous, digital cash, nuts, wallet" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="author" content="Cashumints.space" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://cashumints.space/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cashumints.space/" />
+    <meta property="og:title" content="Explore Trusted Cashu Mints - Cashumints.space" />
+    <meta property="og:description" content="Find and compare trusted Cashu mints. View supported NUTs, user reviews, and wallet compatibility." />
+    <meta property="og:image" content="https://cashumints.space/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="CashuMints.space" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://cashumints.space/" />
+    <meta property="twitter:title" content="Explore Trusted Cashu Mints - Cashumints.space" />
+    <meta property="twitter:description" content="Find and compare trusted Cashu mints. View supported NUTs, user reviews, and wallet compatibility." />
+    <meta property="twitter:image" content="https://cashumints.space/og-image.png" />
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#f7931a" />
+    <meta name="msapplication-TileColor" content="#f7931a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CashuMints.space",
+        "description": "Index of trusted Cashu mints with wallet compatibility and user reviews.",
+        "url": "https://cashumints.space/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "CashuMints.space",
+          "url": "https://cashumints.space/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "CashuMints.space",
+          "url": "https://cashumints.space/"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "5",
+          "ratingCount": "1"
+        },
+        "applicationSubCategory": "Bitcoin",
+        "featureList": [
+          "Cashu mint discovery",
+          "Mint reviews and ratings",
+          "NUT support checking",
+          "Wallet compatibility information",
+          "Decentralized reviews via Nostr"
+        ]
+      }
+    </script>
+    
+    <!-- Plausible Analytics -->
+    <script>
+      // Inject Plausible Analytics with environment variables
+      (function() {
+        const domain = '%VITE_ANALYTICS_DOMAIN%' || 'cashumints.space';
+        const src = '%VITE_ANALYTICS_SRC%' || 'https://analytics.azzamo.net/js/script.js';
+        
+        const script = document.createElement('script');
+        script.defer = true;
+        script.setAttribute('data-domain', domain);
+        script.src = src;
+        document.head.appendChild(script);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

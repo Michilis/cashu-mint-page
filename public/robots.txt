@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://cashumints.space/sitemap.xml
+
+# Block crawling of API endpoints if any
+Disallow: /api/
+Disallow: /*.json$
+
+# Allow important crawling
+Allow: /discover
+Allow: /terms-of-use
+Allow: /privacy-policy
+Allow: /disclaimer 

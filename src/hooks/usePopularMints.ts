@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import NDK, { NDKEvent, NDKFilter, NDKSubscription } from '@nostr-dev-kit/ndk';
-import { initializeNDK, MINT_RECOMMENDATION_KIND, CASHU_MINT_KIND } from '../utils/ndk';
-import { parseNIP87Review, isValidReview } from '../utils/reviewHelpers';
+import { useState, useEffect, useRef } from 'react';
+import { getSharedNDK } from '../utils/ndk';
+import { MINT_RECOMMENDATION_KIND } from '../utils/ndk';
 
 export interface PopularMint {
   mintUrl: string;
@@ -12,263 +11,164 @@ export interface PopularMint {
   lastReviewAt: number;
 }
 
-// Helper function to determine if a review is for a Cashu mint (not Fedi)
-const isCashuMintReview = (event: NDKEvent, mintUrl: string): boolean => {
-  const tags = event.tags || [];
-  const kTag = tags.find((tag: string[]) => tag[0] === 'k')?.[1];
-  const uTag = tags.find((tag: string[]) => tag[0] === 'u')?.[1];
-  const content = event.content.toLowerCase();
-  
-  // Must have k tag pointing to Cashu mint kind (38172)
-  if (kTag === CASHU_MINT_KIND.toString()) {
-    return true;
-  }
-  
-  // For legacy reviews, check URL patterns and content
-  if (uTag) {
-    const urlLower = uTag.toLowerCase();
-    
-    // Exclude fedi-mint patterns
-    if (urlLower.includes('fedi') || urlLower.includes('fedimint')) {
-      return false;
-    }
-    
-    // Check for cashu-specific patterns in URL
-    const cashuPatterns = [
-      'cashu',
-      'mint',
-      '/v1/info', // Cashu mint API endpoint
-      '/api/v1/', // Common cashu mint pattern
-    ];
-    
-    const hasCashuPattern = cashuPatterns.some(pattern => urlLower.includes(pattern));
-    
-    // Check content for cashu-specific terms
-    const cashuContentTerms = [
-      'cashu',
-      'ecash',
-      'blind signature',
-      'lightning',
-      'nuts', // Cashu protocol specification term
-      'chaumian',
-    ];
-    
-    const fediContentTerms = [
-      'fedi',
-      'fedimint',
-      'federation',
-      'guardian',
-    ];
-    
-    const hasCashuContent = cashuContentTerms.some(term => content.includes(term));
-    const hasFediContent = fediContentTerms.some(term => content.includes(term));
-    
-    if (hasFediContent) {
-      return false;
-    }
-    
-    if (hasCashuPattern || hasCashuContent) {
-      return true;
-    }
-  }
-  
-  return false;
-};
-
-export const usePopularMints = (limit: number = 8) => {
+export function usePopularMints(limit: number = 10) {
   const [popularMints, setPopularMints] = useState<PopularMint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error' | 'closed'>('connecting');
-  const [ndk, setNdk] = useState<NDK | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
-  const subscriptionRef = useRef<NDKSubscription | null>(null);
+  // Track reviews per mint, deduplicated by pubkey (one review per user)
   const mintStatsRef = useRef<Map<string, {
-    reviews: number;
-    totalRating: number;
-    lastReviewAt: number;
     mintName: string;
     domain: string;
+    reviews: Map<string, any>; // pubkey -> review data
+    totalRating: number;
+    lastReviewAt: number;
   }>>(new Map());
 
-  const cleanup = useCallback(() => {
-    if (subscriptionRef.current) {
-      subscriptionRef.current.stop();
-      subscriptionRef.current = null;
-    }
-  }, []);
+  useEffect(() => {
+    let sub: any = null;
+    let timeoutId: NodeJS.Timeout;
 
-  const initNDK = useCallback(async () => {
+    const fetchPopularMints = async () => {
     try {
-      setConnectionStatus('connecting');
       setLoading(true);
-      const ndkInstance = await initializeNDK();
-      setNdk(ndkInstance);
-      setConnectionStatus('connected');
-    } catch (error) {
-      console.error('Failed to initialize NDK for popular mints:', error);
-      setConnectionStatus('error');
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchPopularMints = useCallback(async () => {
-    if (!ndk) return;
-
-    try {
-      cleanup();
-      setLoading(true);
+        setError(null);
       mintStatsRef.current.clear();
+
+        console.log('🔗 Initializing NDK for popular mints...');
+        const ndk = await getSharedNDK();
+        console.log('✅ NDK initialized successfully for popular mints');
 
       console.log('📊 Fetching popular Cashu mints by review count...');
 
-      // Broader time range to get more comprehensive data
-      const filters: NDKFilter[] = [
-        // Primary filter: Proper NIP-87 Cashu mint reviews
-        {
-          kinds: [MINT_RECOMMENDATION_KIND], // 38000
-          "#k": [CASHU_MINT_KIND.toString()], // 38172 - Cashu mint kind ONLY
-          limit: 500, // Get more data for better statistics
-          since: Math.floor(Date.now() / 1000) - (90 * 24 * 60 * 60) // Last 90 days
-        },
-        // Fallback: Reviews with cashu-related URL tags
-        {
-          kinds: [MINT_RECOMMENDATION_KIND], // 38000
-          "#u": [
-            "*cashu*",
-            "*mint*",
-            "*ecash*"
-          ],
-          limit: 300,
-          since: Math.floor(Date.now() / 1000) - (90 * 24 * 60 * 60)
-        }
+        // Filters for Cashu mint reviews (NIP-87)
+        const filters = [
+          { kinds: [MINT_RECOMMENDATION_KIND], limit: 100 },
+          { kinds: [MINT_RECOMMENDATION_KIND], limit: 100, since: Math.floor(Date.now() / 1000) - 86400 * 30 } // Last 30 days
       ];
 
       console.log('🔍 Popular mints filters:', filters);
 
-      const sub = ndk.subscribe(filters, { closeOnEose: false });
-      subscriptionRef.current = sub;
+        sub = ndk.subscribe(filters, { closeOnEose: true });
 
-      let reviewEventCount = 0;
-      let cashuReviewCount = 0;
-      let uniqueMintsFound = 0;
+        let totalEvents = 0;
+        let validReviews = 0;
+        let uniqueMints = 0;
 
-      sub.on('event', (event: NDKEvent) => {
-        reviewEventCount++;
+        sub.on('event', (event: any) => {
+          totalEvents++;
         
         try {
           // Extract mint URL from tags
-          const uTag = event.tags?.find((tag: string[]) => tag[0] === 'u')?.[1];
+            const uTag = event.tags.find((tag: any) => tag[0] === 'u');
+            const dTag = event.tags.find((tag: any) => tag[0] === 'd');
+            const kTag = event.tags.find((tag: any) => tag[0] === 'k');
+            const ratingTag = event.tags.find((tag: any) => tag[0] === 'rating');
           
-          if (!uTag) return;
+            if (!uTag || !uTag[1]) {
+              return; // Skip events without mint URL
+            }
           
-          const mintUrl = uTag;
+            const mintUrl = uTag[1];
+            const mintPubkey = dTag ? dTag[1] : '';
+            const referencedKind = kTag ? kTag[1] : '';
+            const rating = ratingTag ? parseInt(ratingTag[1]) : 5;
           
-          // Check if this is specifically a Cashu mint review
-          if (!isCashuMintReview(event, mintUrl)) {
+            // Only process Cashu mint reviews (NIP-87)
+            if (referencedKind !== '38172') {
             return;
           }
           
-          const review = parseNIP87Review(event, mintUrl);
-          
-          if (review && isValidReview(review)) {
-            cashuReviewCount++;
-            
-            // Clean and normalize the mint URL
-            const cleanUrl = mintUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-            const domain = cleanUrl.split('/')[0];
-            
-            // Extract mint name from URL
-            let mintName = domain.split('.')[0] || domain;
-            
-            // Clean up mint name - handle special cases
-            if (mintName === 'mint' && domain.includes('.')) {
-              const parts = domain.split('.');
-              if (parts.length > 1) {
-                mintName = parts[1]; // Use the main domain part
-              }
+            // Extract domain from URL
+            let domain = mintUrl;
+            try {
+              const url = new URL(mintUrl);
+              domain = url.hostname;
+            } catch (e) {
+              // If URL parsing fails, use the original string
             }
-            
-            // Capitalize mint name
-            mintName = mintName.charAt(0).toUpperCase() + mintName.slice(1);
-            
-            // Update or create mint statistics
-            const existing = mintStatsRef.current.get(cleanUrl);
-            if (existing) {
-              existing.reviews += 1;
-              existing.totalRating += review.rating;
-              existing.lastReviewAt = Math.max(existing.lastReviewAt, review.created_at);
-            } else {
-              mintStatsRef.current.set(cleanUrl, {
-                reviews: 1,
-                totalRating: review.rating,
-                lastReviewAt: review.created_at,
-                mintName,
-                domain
-              });
-              uniqueMintsFound++;
-            }
-          }
-        } catch (error) {
-          console.warn('Error processing popular mints event:', error);
-        }
-      });
 
-      // Handle end of stored events
+            // Extract mint name from domain
+            const mintName = domain.replace(/^mint\./, '').replace(/^www\./, '');
+            
+            // Update stats for this mint
+            const existing = mintStatsRef.current.get(mintUrl) || {
+                mintName,
+              domain,
+              reviews: new Map(), // Initialize reviews as a Map
+              totalRating: 0,
+              lastReviewAt: event.created_at
+            };
+
+            // Check if this user has already reviewed this mint
+            if (!existing.reviews.has(event.pubkey)) {
+              existing.reviews.set(event.pubkey, {
+                rating,
+                created_at: event.created_at
+              });
+              existing.totalRating += rating;
+              existing.lastReviewAt = Math.max(existing.lastReviewAt, event.created_at);
+              validReviews++;
+            }
+
+            mintStatsRef.current.set(mintUrl, existing);
+            uniqueMints = mintStatsRef.current.size;
+
+            console.log(`📝 Parsing review:
+  Event ID: ${event.id}
+  Event kind: ${event.kind}
+  d tag (mint pubkey): ${mintPubkey}
+  u tag (mint URL): ${mintUrl}
+  k tag (referenced kind): ${referencedKind}
+  rating tag: ${ratingTag}
+  Extracted mint URL: ${mintUrl}
+  Extracted rating: ${rating}
+  Review type: NIP-87
+  ✅ Successfully parsed review`);
+
+          } catch (parseError) {
+            console.error('❌ Error parsing review event:', parseError);
+          }
+        });
+
       sub.on('eose', () => {
-        console.log(`\n📊 Popular mints analysis complete:`);
-        console.log(`  - Processed ${reviewEventCount} events`);
-        console.log(`  - Found ${cashuReviewCount} valid Cashu reviews`);
-        console.log(`  - Discovered ${uniqueMintsFound} unique Cashu mints`);
+          console.log(`
+📊 Popular mints analysis complete:
+  - Processed ${totalEvents} events
+  - Found ${validReviews} valid Cashu reviews
+  - Discovered ${uniqueMints} unique Cashu mints`);
         
-        // Convert to array and sort by review count
         const mintsArray: PopularMint[] = Array.from(mintStatsRef.current.entries())
           .map(([mintUrl, stats]) => ({
             mintUrl,
             mintName: stats.mintName,
             domain: stats.domain,
-            reviewCount: stats.reviews,
-            averageRating: stats.totalRating / stats.reviews,
+              reviewCount: stats.reviews.size, // Count unique reviews
+              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
             lastReviewAt: stats.lastReviewAt
           }))
-          .sort((a, b) => {
-            // Primary sort: review count (descending)
-            if (b.reviewCount !== a.reviewCount) {
-              return b.reviewCount - a.reviewCount;
-            }
-            // Secondary sort: average rating (descending)
-            if (b.averageRating !== a.averageRating) {
-              return b.averageRating - a.averageRating;
-            }
-            // Tertiary sort: most recent review (descending)
-            return b.lastReviewAt - a.lastReviewAt;
-          })
+            .sort((a, b) => b.reviewCount - a.reviewCount)
           .slice(0, limit);
         
-        console.log(`🏆 Top ${mintsArray.length} popular Cashu mints:`, 
-          mintsArray.map(m => `${m.mintName} (${m.reviewCount} reviews, ${m.averageRating.toFixed(1)} avg)`));
+          console.log(`🏆 Top ${limit} popular Cashu mints:`, mintsArray.map(m => 
+            `${m.mintName} (${m.reviewCount} reviews, ${m.averageRating.toFixed(1)} avg)`
+          ));
         
         setPopularMints(mintsArray);
         setLoading(false);
         sub.stop();
       });
 
-      // Handle subscription close
-      sub.on('close', () => {
-        console.error('❌ Popular mints subscription closed unexpectedly');
-        setConnectionStatus('error');
-        setLoading(false);
-      });
-
       // Timeout fallback
-      setTimeout(() => {
+        timeoutId = setTimeout(() => {
         if (loading) {
           const mintsArray: PopularMint[] = Array.from(mintStatsRef.current.entries())
             .map(([mintUrl, stats]) => ({
               mintUrl,
               mintName: stats.mintName,
               domain: stats.domain,
-              reviewCount: stats.reviews,
-              averageRating: stats.totalRating / stats.reviews,
+                reviewCount: stats.reviews.size, // Count unique reviews
+                averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
               lastReviewAt: stats.lastReviewAt
             }))
             .sort((a, b) => b.reviewCount - a.reviewCount)
@@ -280,32 +180,27 @@ export const usePopularMints = (limit: number = 8) => {
           console.log(`⏰ Popular mints timeout: Found ${mintsArray.length} mints`);
           sub.stop();
         }
-      }, 15000);
+        }, 20000); // Increased to 20 seconds for real data only
 
     } catch (error) {
-      console.error('Error fetching popular mints:', error);
-      setConnectionStatus('error');
+        console.error('❌ Error fetching popular mints:', error);
+        setError('Failed to fetch popular mints');
       setLoading(false);
     }
-  }, [ndk, limit, cleanup, loading]);
+    };
 
-  // Initialize NDK once on mount
-  useEffect(() => {
-    initNDK();
-    return cleanup;
-  }, [initNDK, cleanup]);
-
-  // Fetch popular mints when NDK is ready
-  useEffect(() => {
-    if (ndk && connectionStatus === 'connected') {
       fetchPopularMints();
-    }
-  }, [ndk, connectionStatus, fetchPopularMints]);
 
-  return {
-    popularMints,
-    loading,
-    connectionStatus,
-    refetch: fetchPopularMints
-  };
-}; 
+    return () => {
+      if (sub) {
+        console.log('❌ Popular mints subscription closed unexpectedly');
+        sub.stop();
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [limit]);
+
+  return { popularMints, loading, error };
+} 

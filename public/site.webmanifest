@@ -1,0 +1,27 @@
+{
+  "name": "CashuMints.space",
+  "short_name": "CashuMints",
+  "description": "Find and compare trusted Cashu mints with community reviews and ratings",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#f7931a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/cashu-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/cashu-logo.png",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+} 

@@ -108,13 +108,24 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl }) => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Mint Reviews</h2>
-        <div className="flex items-center gap-4">
+    <div className="bg-gray-800 rounded-xl p-2 sm:p-6 border border-gray-700 w-full max-w-screen-sm mx-auto overflow-x-hidden">
+      <div className="flex flex-col mb-6 w-full">
+        <h2 className="text-xl font-semibold text-white mb-4">Mint Reviews</h2>
+        <div className="flex flex-col gap-y-2 w-full">
+          {/* Write Review button */}
+          {!showReviewForm && (
+            <button
+              onClick={() => setShowReviewForm(true)}
+              disabled={connectionStatus !== 'connected' || showReviewForm}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors w-full"
+            >
+              {connectionStatus !== 'connected' ? 'Connecting...' : 'Write Review'}
+            </button>
+          )}
+          {/* Filters button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors w-full"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
@@ -327,13 +338,14 @@ const ReviewsCard: React.FC<ReviewsCardProps> = ({ mintUrl }) => {
 
       {/* Review Form */}
       <div className="mt-8 pt-6 border-t border-gray-700">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-y-2 mb-4">
           <h3 className="text-lg font-medium text-white">Write a Review</h3>
+          {/* Hide the button here on mobile, show only on desktop */}
           {!showReviewForm && (
             <button
               onClick={() => setShowReviewForm(true)}
               disabled={connectionStatus !== 'connected'}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+              className="hidden md:inline-flex px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors md:w-auto w-full"
             >
               {connectionStatus !== 'connected' ? 'Connecting...' : 'Write Review'}
             </button>

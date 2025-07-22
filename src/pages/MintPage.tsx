@@ -4,6 +4,7 @@ import { getMintInfoByDomain } from '../services/api';
 import { MintInfo } from '../types';
 import { useMintStore } from '../store/mintStore';
 import { trackMintView, trackMintInfoFetch } from '../utils/analytics';
+import { useSEO, createMintStructuredData } from '../hooks/useSEO';
 import InfoSection from '../components/InfoSection';
 import ContactCard from '../components/cards/ContactCard';
 import NutSupportCard from '../components/cards/NutSupportCard';
@@ -16,12 +17,22 @@ import MintHeader from '../components/MintHeader';
 
 const MintPage: React.FC = () => {
   const location = useLocation();
-  // Extract the full path excluding the leading slash
-  const mintPath = location.pathname.slice(1);
+  // Extract the full path excluding the leading slash and clean URL
+  const rawMintPath = location.pathname.slice(1);
+  const mintPath = rawMintPath.replace(/^https?:\/\//, '');
   const [mintInfo, setMintInfo] = useState<MintInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const addMint = useMintStore((state) => state.addMint);
+
+  // Redirect if URL contains protocol prefixes
+  useEffect(() => {
+    if (rawMintPath !== mintPath) {
+      // URL contains protocol prefixes, redirect to clean URL
+      window.history.replaceState(null, '', `/${mintPath}`);
+      console.log('🔄 Redirected from', rawMintPath, 'to', mintPath);
+    }
+  }, [rawMintPath, mintPath]);
 
   const fetchMintInfo = async () => {
     if (!mintPath) {
@@ -43,7 +54,6 @@ const MintPage: React.FC = () => {
       
       setMintInfo(data);
       addMint(mintPath, data);
-      document.title = `${data.name || mintPath} Mint Info`;
       
       // Track successful mint info fetch
       trackMintInfoFetch(data.url || mintPath, true);
@@ -70,6 +80,23 @@ const MintPage: React.FC = () => {
     }
   }, [mintInfo, mintPath]);
 
+  // SEO meta tags for mint page
+  const mintDisplayName = mintInfo?.name || mintPath;
+  const pageTitle = mintInfo ? `${mintDisplayName} Mint – Reviews, NUT Support & Wallets | CashuMints.space` : undefined;
+  const pageDescription = mintInfo ? `See what users think of ${mintDisplayName} mint. View NUT support, wallet compatibility, and community reviews.` : undefined;
+  const canonicalUrl = `https://cashumints.space/${mintPath}`;
+  const keywords = mintInfo ? `cashu, ${mintDisplayName}, mint, bitcoin, ecash, reviews, nuts, wallets, ${mintPath}` : undefined;
+  const structuredData = mintInfo ? createMintStructuredData(mintInfo, mintPath) : undefined;
+
+  useSEO({
+    title: pageTitle,
+    description: pageDescription,
+    keywords,
+    canonicalUrl,
+    ogType: 'article',
+    structuredData,
+  });
+
   const showContact = import.meta.env.VITE_ENABLE_CONTACT === 'true' && mintInfo?.contact;
   const showNutTable = import.meta.env.VITE_ENABLE_NUT_TABLE === 'true' && mintInfo?.nuts;
   const showNipTable = import.meta.env.VITE_ENABLE_NIP_TABLE === 'true' && mintInfo?.nips;
@@ -79,10 +106,10 @@ const MintPage: React.FC = () => {
   if (!mintInfo) return <ErrorDisplay message="No mint information available" retryFn={fetchMintInfo} />;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full max-w-full px-2 sm:px-4 py-8 mx-auto overflow-x-hidden">
       <MintHeader mintInfo={mintInfo} />
       
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl w-full mx-auto space-y-6">
         <InfoSection mintInfo={mintInfo} />
         
         {showContact && mintInfo.contact && (
