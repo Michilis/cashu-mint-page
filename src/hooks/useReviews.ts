@@ -401,7 +401,7 @@ export const useReviews = (mintUrl: string) => {
           console.log(`⏰ Timeout: Found ${aggregatedReviews.length} reviews for mint ${pubkey}`);
           sub.stop();
         }
-      }, 15000);
+      }, 8000);
 
     } catch (error) {
       console.error('Error fetching reviews:', error);

@@ -1,5 +1,6 @@
 import NDK, { NDKEvent } from "@nostr-dev-kit/ndk";
 import { getMintPubkey } from './api';
+import { getSharedNDK } from '../utils/ndk';
 
 // NIP-87 Constants
 const MINT_RECOMMENDATION_KIND = 38000; // Review event kind
@@ -34,20 +35,17 @@ export class CashuReviewPublisher {
 
   /**
    * Step 1: Initialize NDK
-   * Sets up connection to Nostr relays
+   * Uses the shared NDK instance instead of creating a new one
    */
   async initialize(): Promise<void> {
-    console.log('🚀 Initializing NDK for review publishing...');
+    console.log('🚀 Using shared NDK instance for review publishing...');
     
-    this.ndk = new NDK({
-      explicitRelayUrls: RELAY_URLS
-    });
-
     try {
-      await this.ndk.connect();
-      console.log('✅ NDK connected to relays:', RELAY_URLS);
+      // Use the shared NDK instance from the main app
+      this.ndk = await getSharedNDK();
+      console.log('✅ Shared NDK instance acquired');
       
-      // Attempt to use browser signer (e.g., Alby, nos2x, etc.)
+      // Check for browser extension
       if (typeof window !== 'undefined') {
         console.log('🔐 Checking for browser extensions...');
         
@@ -58,10 +56,6 @@ export class CashuReviewPublisher {
             // Test if we can get the public key (this will trigger permission request)
             const pubkey = await (window as any).nostr.getPublicKey();
             console.log('✅ Browser signer ready, pubkey:', pubkey.substring(0, 16) + '...');
-            
-            // NDK should automatically detect and use browser extensions
-            // We don't need to manually configure the signer
-            console.log('✅ Browser extension available for NDK');
           } catch (error) {
             console.error('❌ Browser signer setup failed:', error);
             console.log('💡 User may have denied permission or extension not working');
@@ -74,7 +68,7 @@ export class CashuReviewPublisher {
       
       this.isConnected = true;
     } catch (error) {
-      console.error('❌ Failed to initialize NDK:', error);
+      console.error('❌ Failed to get shared NDK instance:', error);
       throw new Error('Failed to connect to Nostr relays');
     }
   }
