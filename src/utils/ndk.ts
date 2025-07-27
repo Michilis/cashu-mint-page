@@ -106,8 +106,25 @@ export const initializeNDK = async (): Promise<NDK> => {
 
     console.log('✅ NDK instance created, attempting to connect...');
 
-  await ndkInstance.connect();
-    console.log('✅ NDK connected to relay pool:', CASHU_RELAY_POOL.length, 'relays');
+    // Add timeout to prevent hanging
+    const connectWithTimeout = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        console.warn('⚠️ NDK connection timeout after 5 seconds, continuing anyway...');
+        resolve(); // Continue even if connection times out
+      }, 5000);
+
+      ndkInstance.connect().then(() => {
+        clearTimeout(timeout);
+        console.log('✅ NDK connected to relay pool:', CASHU_RELAY_POOL.length, 'relays');
+        resolve();
+      }).catch((error) => {
+        clearTimeout(timeout);
+        console.warn('⚠️ NDK connection failed, continuing anyway:', error);
+        resolve(); // Continue even if connection fails
+      });
+    });
+
+    await connectWithTimeout;
     
     // Test connection by subscribing to a simple filter
     console.log('🧪 Testing relay connection...');
