@@ -143,11 +143,19 @@ export function usePopularMints(limit: number = 10) {
             mintUrl,
             mintName: stats.mintName,
             domain: stats.domain,
-              reviewCount: stats.reviews.size, // Count unique reviews
-              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
+            reviewCount: stats.reviews.size, // Count unique reviews
+            averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
             lastReviewAt: stats.lastReviewAt
           }))
-            .sort((a, b) => b.reviewCount - a.reviewCount)
+          // Only include mints with at least 3 reviews
+          .filter(m => m.reviewCount >= 3)
+          // Sort by highest average rating, then by most reviews
+          .sort((a, b) => {
+            if (b.averageRating !== a.averageRating) {
+              return b.averageRating - a.averageRating;
+            }
+            return b.reviewCount - a.reviewCount;
+          })
           .slice(0, limit);
         
           console.log(`🏆 Top ${limit} popular Cashu mints:`, mintsArray.map(m => 
@@ -167,11 +175,19 @@ export function usePopularMints(limit: number = 10) {
               mintUrl,
               mintName: stats.mintName,
               domain: stats.domain,
-                reviewCount: stats.reviews.size, // Count unique reviews
-                averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
+              reviewCount: stats.reviews.size, // Count unique reviews
+              averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
               lastReviewAt: stats.lastReviewAt
             }))
-            .sort((a, b) => b.reviewCount - a.reviewCount)
+            // Only include mints with at least 3 reviews
+            .filter(m => m.reviewCount >= 3)
+            // Sort by highest average rating, then by most reviews
+            .sort((a, b) => {
+              if (b.averageRating !== a.averageRating) {
+                return b.averageRating - a.averageRating;
+              }
+              return b.reviewCount - a.reviewCount;
+            })
             .slice(0, limit);
           
           setPopularMints(mintsArray);

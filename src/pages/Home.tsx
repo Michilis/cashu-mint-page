@@ -90,9 +90,9 @@ const Home: React.FC = () => {
       <section className="py-16 bg-black/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Most Reviewed Cashu Mints</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Best rated cashu mints</h2>
             <p className="text-xl text-brand-text">
-              Trusted by the community with the highest number of reviews
+              The top-rated Cashu mints, trusted by the community with the highest scores and most reviews
             </p>
           </div>
 

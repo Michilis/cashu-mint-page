@@ -39,13 +39,16 @@ export const useReviews = (mintUrl: string) => {
 
   const initNDK = useCallback(async () => {
     try {
+      console.log('🔄 useReviews: Starting NDK initialization...');
       setConnectionStatus('connecting');
       setLoading(true);
       const ndkInstance = await initializeNDK();
+      console.log('✅ useReviews: NDK initialized successfully, setting ndk state...');
       setNdk(ndkInstance);
       setConnectionStatus('connected');
+      console.log('✅ useReviews: NDK state set and connection status updated to connected');
     } catch (error) {
-      console.error('Failed to initialize NDK:', error);
+      console.error('❌ useReviews: Failed to initialize NDK:', error);
       setConnectionStatus('error');
       setLoading(false);
       isLoadingRef.current = false;
@@ -84,16 +87,12 @@ export const useReviews = (mintUrl: string) => {
         setIsLoadingMore(true);
       }
 
-      // Get mint pubkey if we don't have it
+      // Get mint pubkey if we don't have it (but don't fail if we can't get it)
       let pubkey = mintPubkey;
       if (!pubkey) {
         pubkey = await fetchMintPubkey();
         if (!pubkey) {
-          console.error('❌ Cannot fetch reviews without mint pubkey');
-          setLoading(false);
-          isLoadingRef.current = false;
-          setIsLoadingMore(false);
-          return;
+          console.warn('⚠️ Could not get mint pubkey, falling back to URL-based filtering only');
         }
       }
 
@@ -156,34 +155,32 @@ export const useReviews = (mintUrl: string) => {
         setTimeout(resolve, 5000);
       });
 
-      // PROPER NIP-87 FILTERS using mint pubkey in d tag
-      const filters: NDKFilter[] = [
-        {
+      // Build filters conditionally based on whether we have a mint pubkey
+      const filters: NDKFilter[] = [];
+
+      // NIP-87 filter (only if we have mint pubkey)
+      if (pubkey) {
+        filters.push({
           kinds: [MINT_RECOMMENDATION_KIND], // 38000
           "#d": [pubkey], // Use mint pubkey as identifier
           "#k": [CASHU_MINT_KIND.toString()], // 38172 - Cashu mint kind
           limit: currentLimitRef.current
-        },
-        // FALLBACK: URL-based filtering for legacy reviews
-        {
-          kinds: [MINT_RECOMMENDATION_KIND], // 38000
-          "#u": [
-            mintUrl,
-            mintUrl.replace(/\/$/, ''), // without trailing slash
-            `${mintUrl}/`, // with trailing slash
-            mintUrl.replace(/^https?:\/\//, ''), // without protocol
-            `https://${mintUrl.replace(/^https?:\/\//, '')}`, // ensure https
-            `http://${mintUrl.replace(/^https?:\/\//, '')}` // try http
-          ],
-          limit: currentLimitRef.current
-        },
-        // ADDITIONAL: Broader search for older reviews
-        {
-          kinds: [MINT_RECOMMENDATION_KIND], // 38000
-          limit: currentLimitRef.current * 2, // Even higher limit for broad search
-          since: 0 // Get all historical reviews
-        }
-      ];
+        });
+      }
+
+      // URL-based filtering for legacy reviews (always include)
+      filters.push({
+        kinds: [MINT_RECOMMENDATION_KIND], // 38000
+        "#u": [
+          mintUrl,
+          mintUrl.replace(/\/$/, ''), // without trailing slash
+          `${mintUrl}/`, // with trailing slash
+          mintUrl.replace(/^https?:\/\//, ''), // without protocol
+          `https://${mintUrl.replace(/^https?:\/\//, '')}`, // ensure https
+          `http://${mintUrl.replace(/^https?:\/\//, '')}` // try http
+        ],
+        limit: currentLimitRef.current
+      });
 
       console.log('🔍 NIP-87 + Fallback filters:', filters);
 
@@ -210,8 +207,8 @@ export const useReviews = (mintUrl: string) => {
             const kTag = event.tags?.find((tag: string[]) => tag[0] === 'k')?.[1];
             const uTag = event.tags?.find((tag: string[]) => tag[0] === 'u')?.[1];
             
-            const isProperNIP87 = dTag === pubkey && kTag === CASHU_MINT_KIND.toString();
-            const isLegacyReview = !isProperNIP87 && uTag && (
+            const isProperNIP87 = pubkey && dTag === pubkey && kTag === CASHU_MINT_KIND.toString();
+            const isLegacyReview = uTag && (
               uTag === mintUrl || 
               uTag === mintUrl.replace(/\/$/, '') ||
               uTag === `${mintUrl}/` ||
@@ -222,39 +219,16 @@ export const useReviews = (mintUrl: string) => {
               mintUrl.replace(/^https?:\/\//, '').split('/')[0] === uTag.replace(/^https?:\/\//, '').split('/')[0] ||
               uTag.replace(/^https?:\/\//, '').split('/')[0] === mintUrl.replace(/^https?:\/\//, '').split('/')[0]
             );
-            
-            // BROADER MATCHING: Also check content for mint references
-            const mintDomain = mintUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-            const baseDomain = mintDomain.split('/')[0]; // Extract just the domain part
-            const contentMentionsMint = review.content.toLowerCase().includes(mintDomain.toLowerCase()) ||
-                                       review.content.toLowerCase().includes(baseDomain.toLowerCase()) ||
-                                       review.content.toLowerCase().includes('21mint') ||
-                                       review.content.toLowerCase().includes(mintUrl.toLowerCase());
 
-            // Additional debug logging for minibits specifically
-            if (mintUrl.includes('minibits')) {
-              console.log(`  🔍 MINIBITS DEBUG for event ${reviewEventCount}:`);
-              console.log(`    mintUrl: ${mintUrl}`);
-              console.log(`    mintDomain: ${mintDomain}`);
-              console.log(`    dTag: ${dTag}, expected pubkey: ${pubkey}`);
-              console.log(`    uTag: ${uTag}`);
-              console.log(`    isProperNIP87: ${isProperNIP87}`);
-              console.log(`    isLegacyReview: ${isLegacyReview}`);
-              console.log(`    contentMentionsMint: ${contentMentionsMint}`);
-              console.log(`    review content: ${review.content.substring(0, 200)}`);
-            }
-
+            // Accept reviews that are either proper NIP-87 or have explicit URL matches
             if (isProperNIP87) {
               console.log(`  ✅ Valid NIP-87 review found (proper format)`);
             } else if (isLegacyReview) {
               console.log(`  ✅ Valid legacy review found (URL-based)`);
-            } else if (contentMentionsMint && review.content.length > 20) {
-              console.log(`  ✅ Valid review found (content mentions mint)`);
             } else {
               console.log(`  ❌ Review not for this mint`);
-              console.log(`    dTag: ${dTag}, expected: ${pubkey}`);
+              console.log(`    dTag: ${dTag}, expected: ${pubkey || 'none'}`);
               console.log(`    uTag: ${uTag}, target: ${mintUrl}`);
-              console.log(`    contentMentionsMint: ${contentMentionsMint}`);
               console.log(`    isProperNIP87: ${isProperNIP87}, isLegacyReview: ${isLegacyReview}`);
               return; // Skip this review
             }
@@ -363,7 +337,7 @@ export const useReviews = (mintUrl: string) => {
           setIsLoadingMore(false);
         }
         
-        console.log(`🎯 Final result: ${aggregatedReviews.length} reviews for mint ${pubkey}`);
+        console.log(`🎯 Final result: ${aggregatedReviews.length} reviews for mint ${pubkey || mintUrl}`);
         console.log(`📈 Has more reviews: ${isLoadingMore ? 'checking...' : aggregatedReviews.length >= 2}`);
         sub.stop(); // Stop subscription after EOSE
       });
@@ -398,10 +372,10 @@ export const useReviews = (mintUrl: string) => {
             setIsLoadingMore(false);
           }
           
-          console.log(`⏰ Timeout: Found ${aggregatedReviews.length} reviews for mint ${pubkey}`);
+          console.log(`⏰ Timeout: Found ${aggregatedReviews.length} reviews for mint ${pubkey || mintUrl}`);
           sub.stop();
         }
-      }, 15000);
+      }, 8000);
 
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -484,12 +458,16 @@ export const useReviews = (mintUrl: string) => {
     }
   }, [mintUrl, fetchMintPubkey]);
 
-  // Fetch reviews when NDK is ready and we have mint pubkey
+  // Fetch reviews when NDK is ready (don't wait for mintPubkey since it's optional)
   useEffect(() => {
-    if (ndk && mintUrl && mintPubkey) {
+    console.log('🔄 useReviews fetchReviews effect triggered:', { ndk: !!ndk, mintUrl, mintPubkey });
+    if (ndk && mintUrl) {
+      console.log('✅ Conditions met, calling fetchReviews...');
       fetchReviews();
+    } else {
+      console.log('❌ Conditions not met for fetchReviews:', { hasNdk: !!ndk, hasMintUrl: !!mintUrl });
     }
-  }, [ndk, mintUrl, mintPubkey]); // Added mintPubkey as dependency
+  }, [ndk, mintUrl, mintPubkey]); // Keep mintPubkey to refetch when it becomes available
 
   return {
     reviews,
