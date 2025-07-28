@@ -68,7 +68,29 @@ export function useGlobalReviews(limit: number = 10) {
             const mintUrl = uTag[1];
             const mintPubkey = dTag ? dTag[1] : '';
             const referencedKind = kTag ? kTag[1] : '';
-            const rating = ratingTag ? parseInt(ratingTag[1]) : 5;
+            
+            // Parse rating with improved extraction for [X/5] format
+            let rating = 5;
+            
+            // First check rating tag
+            if (ratingTag) {
+              const parsedRating = parseInt(ratingTag[1]);
+              if (parsedRating >= 1 && parsedRating <= 5) {
+                rating = parsedRating;
+              }
+            } else {
+              // Parse from content - look for [X/5] pattern at beginning first
+              const bracketRatingMatch = event.content.match(/^\s*\[([1-5])\/5\]/);
+              if (bracketRatingMatch) {
+                rating = parseInt(bracketRatingMatch[1]);
+              } else {
+                // Fallback to other rating formats
+                const ratingMatch = event.content.match(/rating[:\s]*([1-5])|([1-5])[\/]5|([1-5])\s*star/i);
+                if (ratingMatch) {
+                  rating = parseInt(ratingMatch[1] || ratingMatch[2] || ratingMatch[3]) || 5;
+                }
+              }
+            }
           
             // Only process Cashu mint reviews (NIP-87)
             if (referencedKind !== '38172') {

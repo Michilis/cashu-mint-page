@@ -43,8 +43,8 @@ export function usePopularMints(limit: number = 10) {
 
         // Filters for Cashu mint reviews (NIP-87)
         const filters = [
-          { kinds: [MINT_RECOMMENDATION_KIND], limit: 100 },
-          { kinds: [MINT_RECOMMENDATION_KIND], limit: 100, since: Math.floor(Date.now() / 1000) - 86400 * 30 } // Last 30 days
+          { kinds: [MINT_RECOMMENDATION_KIND], limit: 1000 }, // Increased to match useReviews
+          { kinds: [MINT_RECOMMENDATION_KIND], limit: 500, since: Math.floor(Date.now() / 1000) - 86400 * 90 } // Last 90 days
       ];
 
       console.log('🔍 Popular mints filters:', filters);
@@ -72,7 +72,29 @@ export function usePopularMints(limit: number = 10) {
             const mintUrl = uTag[1];
             const mintPubkey = dTag ? dTag[1] : '';
             const referencedKind = kTag ? kTag[1] : '';
-            const rating = ratingTag ? parseInt(ratingTag[1]) : 5;
+            
+            // Parse rating with improved extraction for [X/5] format
+            let rating = 5;
+            
+            // First check rating tag
+            if (ratingTag) {
+              const parsedRating = parseInt(ratingTag[1]);
+              if (parsedRating >= 1 && parsedRating <= 5) {
+                rating = parsedRating;
+              }
+            } else {
+              // Parse from content - look for [X/5] pattern at beginning first
+              const bracketRatingMatch = event.content.match(/^\s*\[([1-5])\/5\]/);
+              if (bracketRatingMatch) {
+                rating = parseInt(bracketRatingMatch[1]);
+              } else {
+                // Fallback to other rating formats
+                const ratingMatch = event.content.match(/rating[:\s]*([1-5])|([1-5])[\/]5|([1-5])\s*star/i);
+                if (ratingMatch) {
+                  rating = parseInt(ratingMatch[1] || ratingMatch[2] || ratingMatch[3]) || 5;
+                }
+              }
+            }
           
             // Only process Cashu mint reviews (NIP-87)
             if (referencedKind !== '38172') {
@@ -147,13 +169,19 @@ export function usePopularMints(limit: number = 10) {
             averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
             lastReviewAt: stats.lastReviewAt
           }))
-          // Only include mints with at least 3 reviews
-          .filter(m => m.reviewCount >= 3)
-          // Sort by highest average rating, then by most reviews
+          // Only include mints with at least 1 review
+          .filter(m => m.reviewCount >= 1)
+          // Sort by composite score: rating weighted by review count
           .sort((a, b) => {
-            if (b.averageRating !== a.averageRating) {
-              return b.averageRating - a.averageRating;
+            // Calculate composite score: rating + bonus for review count
+            // Higher review count gives more confidence in the rating
+            const scoreA = a.averageRating + (Math.min(a.reviewCount, 20) / 20) * 0.5; // Cap bonus at 20 reviews
+            const scoreB = b.averageRating + (Math.min(b.reviewCount, 20) / 20) * 0.5;
+            
+            if (scoreB !== scoreA) {
+              return scoreB - scoreA;
             }
+            // If composite scores are equal, prefer more reviews
             return b.reviewCount - a.reviewCount;
           })
           .slice(0, limit);
@@ -179,13 +207,19 @@ export function usePopularMints(limit: number = 10) {
               averageRating: stats.reviews.size > 0 ? stats.totalRating / stats.reviews.size : 0,
               lastReviewAt: stats.lastReviewAt
             }))
-            // Only include mints with at least 3 reviews
-            .filter(m => m.reviewCount >= 3)
-            // Sort by highest average rating, then by most reviews
+            // Only include mints with at least 1 review
+            .filter(m => m.reviewCount >= 1)
+            // Sort by composite score: rating weighted by review count
             .sort((a, b) => {
-              if (b.averageRating !== a.averageRating) {
-                return b.averageRating - a.averageRating;
+              // Calculate composite score: rating + bonus for review count
+              // Higher review count gives more confidence in the rating
+              const scoreA = a.averageRating + (Math.min(a.reviewCount, 20) / 20) * 0.5; // Cap bonus at 20 reviews
+              const scoreB = b.averageRating + (Math.min(b.reviewCount, 20) / 20) * 0.5;
+              
+              if (scoreB !== scoreA) {
+                return scoreB - scoreA;
               }
+              // If composite scores are equal, prefer more reviews
               return b.reviewCount - a.reviewCount;
             })
             .slice(0, limit);
@@ -196,7 +230,7 @@ export function usePopularMints(limit: number = 10) {
           console.log(`⏰ Popular mints timeout: Found ${mintsArray.length} mints`);
           sub.stop();
         }
-        }, 20000); // Increased to 20 seconds for real data only
+        }, 30000); // Increased to 30 seconds for larger dataset
 
     } catch (error) {
         console.error('❌ Error fetching popular mints:', error);
