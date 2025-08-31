@@ -22,7 +22,7 @@ const joinUrl = (base: string, suffix: string): string => {
 };
 
 const buildSingleTorProxyUrl = (proxy: string, hostPath: string, path: string): string => {
-  const onionHttpUrl = `http://${hostPath}${path}`;
+  const onionHttpUrl = `http://${hostPath}${path}`; // Force http for onion to avoid TLS issues
   if (proxy.includes('{URL}')) {
     return proxy.replace('{URL}', encodeURIComponent(onionHttpUrl));
   }
@@ -39,20 +39,14 @@ export const getTorProxyCandidates = (hostPath: string, path: string): string[] 
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
-  // Default public Tor gateways as fallbacks when no proxy configured
+  // Default production proxy endpoints (same-origin or public)
   const defaultGateways = [
-    'https://{HOST}.onion.pet{PATH}',
-    'https://{HOST}.onion.dog{PATH}',
-    'https://{HOST}.onion.ws{PATH}',
-    'https://{HOST}.tor2web.io{PATH}',
-    'https://onion.tor2web.org/{HOST}{PATH}',
+    'https://cashumints.space/tor/{HOST}{PATH}',
+    'https://cashumints.space/tor?url={URL}',
   ];
 
   const bases = configured.length > 0 ? configured : defaultGateways;
   const candidates = bases.map((p) => buildSingleTorProxyUrl(p, hostPath, path));
-
-  // Always include direct HTTP as a final fallback for Tor-enabled browsers
-  candidates.push(`http://${hostPath}${path}`);
 
   // Deduplicate while preserving order
   const seen = new Set<string>();
@@ -69,7 +63,6 @@ export const buildMintInfoFetchUrl = (hostPath: string, isOnion: boolean): strin
   const path = '/v1/info';
   if (isOnion) {
     const candidates = getTorProxyCandidates(hostPath, path);
-    // Return the first candidate; callers may iterate through the rest on failure
     return candidates[0];
   }
   return `https://${hostPath}${path}`;
@@ -83,7 +76,6 @@ export const normalizeMintInfoUrls = (
     // Display onion without protocol per requirement
     return { url: hostPath, urls: [hostPath] };
   }
-  // For clearnet, prefer https canonical URL
   const httpsUrl = `https://${hostPath}`;
   return { url: httpsUrl, urls: [httpsUrl] };
 }; 
