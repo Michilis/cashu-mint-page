@@ -174,6 +174,13 @@ export const NUT_INFO: Record<string, NutDetails> = {
     features: ['HTTP 402 support', 'Payment required responses', 'Standard compliance', 'Web integration'],
     useCase: 'Provides standard HTTP responses for payment-required scenarios.',
     technicalDetails: 'Uses HTTP 402 status code for payment-required responses.'
+  },
+  '25': {
+    title: 'BOLT12 Payment Method',
+    description: 'Enables minting and melting ecash using Lightning Network offers (BOLT12).',
+    features: ['BOLT12 support', 'Lightning offers', 'Multiple issuances', 'Amount-less offers', 'Change handling'],
+    useCase: 'Provides Lightning Network payment integration using BOLT12 offers for minting and melting ecash.',
+    technicalDetails: 'Extends NUT-04 and NUT-05 with BOLT12 payment method, supporting Lightning Network offers with optional amount specification and change handling for overpaid fees.'
   }
 };
 
