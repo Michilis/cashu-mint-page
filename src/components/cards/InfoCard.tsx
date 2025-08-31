@@ -27,6 +27,23 @@ const InfoCard: React.FC<InfoCardProps> = ({ mintInfo, showMotd, showTos, showIc
     return url;
   };
 
+  const canonicalize = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  const uniqueUrls = (() => {
+    const raw: string[] = [];
+    if (mintInfo.url) raw.push(mintInfo.url);
+    if (mintInfo.urls && mintInfo.urls.length > 0) raw.push(...mintInfo.urls);
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const u of raw) {
+      const key = canonicalize(u);
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        result.push(u);
+      }
+    }
+    return result;
+  })();
+
   return (
     <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6 transition-all duration-300 hover:shadow-xl">
       <div className="flex items-center mb-4">
@@ -77,28 +94,13 @@ const InfoCard: React.FC<InfoCardProps> = ({ mintInfo, showMotd, showTos, showIc
           </div>
         )}
         
-        {(mintInfo.url || (mintInfo.urls && mintInfo.urls.length > 0)) && (
+        {uniqueUrls.length > 0 && (
           <div className="flex items-start">
             <Globe className="text-brand-primary mr-2 h-5 w-5 mt-1 flex-shrink-0" />
             <div className="flex-grow">
               <p className="text-white font-semibold">URLs</p>
-              {mintInfo.url && (
-                <div className="flex items-center group">
-                  <p className="text-brand-text text-sm mr-2">{truncateUrl(mintInfo.url)}</p>
-                  <button
-                    onClick={() => handleCopy(mintInfo.url!, 'url')}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {copiedStates['url'] ? (
-                      <Check className="h-4 w-4 text-green-400" />
-                    ) : (
-                      <Copy className="h-4 w-4 text-brand-text hover:text-brand-primary" />
-                    )}
-                  </button>
-                </div>
-              )}
-              {mintInfo.urls && mintInfo.urls.map((url, index) => (
-                <div key={index} className="flex items-center group">
+              {uniqueUrls.map((url, index) => (
+                <div key={`${canonicalize(url)}-${index}`} className="flex items-center group">
                   <p className="text-brand-text text-sm mr-2">{truncateUrl(url)}</p>
                   <button
                     onClick={() => handleCopy(url, `url-${index}`)}
